@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>acilbi</title>
+<style>
+body{font-family:system-ui;background:#fff;color:#111;text-align:center;padding:18px}
+input,button{width:100%;padding:14px;margin-top:10px;font-size:16px;border-radius:8px}
+button{background:#111;color:#fff;border:none}
+.panel{display:none;margin-top:15px;text-align:left;background:#f3f3f3;padding:12px;border-radius:10px}
+.warn{background:#ffefc2;padding:10px;border-left:4px solid #e6a700;border-radius:6px;margin-top:10px}
+</style>
+</head>
+<body>
+
+<h2>acilbi</h2>
+
+<div id="accessPanel">
+  <p>Bu kişi yardıma ihtiyaç duyabilir.</p>
+  <input id="pinInput" placeholder="Şifre">
+  <div class="warn">Şifre: <b id="visiblePin"></b></div>
+  <button id="btnAccess">Bilgileri Göster</button>
+</div>
+
+<div id="infoPanel" class="panel"></div>
+
+<script>
+const API = "https://acilbi-api.ilkerust.workers.dev";
+const params = new URLSearchParams(location.search);
+const id = params.get("id");
+document.getElementById("visiblePin").innerText = id;
+
+btnAccess.onclick = async ()=>{
+  const res = await fetch(`${API}?id=${id}`);
+  const data = await res.json();
+
+  if(!data.name){ alert("Bilgi bulunamadı"); return; }
+
+  infoPanel.style.display="block";
+  infoPanel.innerHTML = `
+    <h3>${data.name}</h3>
+    <p><b>Acil Kişi:</b> ${data.emTel}</p>
+    <button onclick="location.href='tel:${data.emTel}'">Ara</button>
+  `;
+};
+</script>
+</body>
+</html>
