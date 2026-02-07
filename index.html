@@ -6,12 +6,14 @@
 <title>acilbi</title>
 <style>
 body{font-family:system-ui;background:#fff;color:#111;text-align:center;padding:18px}
-input,button,select,textarea{width:100%;padding:14px;margin-top:10px;font-size:16px;border-radius:8px}
+input,button,select,textarea{width:100%;padding:14px;margin-top:6px;font-size:16px;border-radius:8px}
 button{background:#111;color:#fff;border:none}
 .panel{display:none;margin-top:15px;text-align:left;background:#f3f3f3;padding:12px;border-radius:10px}
 .warn{background:#ffefc2;padding:10px;border-left:4px solid #e6a700;border-radius:6px;margin-top:10px}
 hr{margin:30px 0}
 .emergency{background:#d32f2f;color:#fff;font-weight:bold}
+.inlineAge{font-size:14px;margin-top:4px;color:#333}
+label{font-weight:600;margin-top:14px;display:block}
 </style>
 </head>
 <body>
@@ -31,29 +33,39 @@ hr{margin:30px 0}
 <div id="setupPanel" class="panel" style="display:none">
   <h3>Bilgi Girişi (Sahip)</h3>
 
+  <label>Dil Seçimi</label>
   <select id="langSelect">
     <option value="tr">Türkçe</option>
     <option value="en">English</option>
   </select>
 
-  <input id="nameInput" placeholder="Ad Soyad">
+  <label>Ad Soyad</label>
+  <input id="nameInput">
 
+  <label>Doğum Yılı</label>
+  <select id="birthYear"></select>
+  <div id="agePreview" class="inlineAge"></div>
+
+  <label>Kan Grubu</label>
   <select id="bloodInput">
-    <option value="">Kan Grubu Seçin</option>
-    <option>A Rh+</option>
-    <option>A Rh-</option>
-    <option>B Rh+</option>
-    <option>B Rh-</option>
-    <option>AB Rh+</option>
-    <option>AB Rh-</option>
-    <option>0 Rh+</option>
-    <option>0 Rh-</option>
+    <option value="">Seçiniz</option>
+    <option>A Rh+</option><option>A Rh-</option>
+    <option>B Rh+</option><option>B Rh-</option>
+    <option>AB Rh+</option><option>AB Rh-</option>
+    <option>0 Rh+</option><option>0 Rh-</option>
   </select>
 
-  <textarea id="conditionInput" placeholder="Kronik Rahatsızlıklar"></textarea>
-  <textarea id="medInput" placeholder="Rutin Kullanılan İlaçlar"></textarea>
-  <textarea id="allergyInput" placeholder="Alerjiler"></textarea>
-  <input id="telInput" placeholder="Acil Kişi Telefon">
+  <label>Kronik Rahatsızlıklar</label>
+  <textarea id="conditionInput"></textarea>
+
+  <label>Rutin Kullanılan İlaçlar</label>
+  <textarea id="medInput"></textarea>
+
+  <label>Alerjiler</label>
+  <textarea id="allergyInput"></textarea>
+
+  <label>Acil Kişi Telefon</label>
+  <input id="telInput">
 
   <button onclick="saveData()">Kaydet</button>
 </div>
@@ -62,65 +74,54 @@ hr{margin:30px 0}
 const API = "https://acilbi-api.ilkerust.workers.dev";
 const params = new URLSearchParams(location.search);
 const id = params.get("id");
-
 document.getElementById("visiblePin").innerText = id || "";
 
 if(location.search.includes("setup=1")){
   document.getElementById("setupPanel").style.display="block";
 }
 
-const texts = {
-  tr: {
-    help: "Bu kişi yardıma ihtiyaç duyabilir.",
-    show: "Bilgileri Göster",
-    emergency: "Acil Kişi",
-    blood: "Kan Grubu",
-    cond: "Kronik Rahatsızlıklar",
-    meds: "Rutin İlaçlar",
-    allergy: "Alerjiler",
-    call: "Acil Kişiyi Ara",
-    call112: "112'yi Ara",
-    saved: "Kaydedildi!"
-  },
-  en: {
-    help: "This person may need help.",
-    show: "Show Information",
-    emergency: "Emergency Contact",
-    blood: "Blood Type",
-    cond: "Chronic Conditions",
-    meds: "Medications",
-    allergy: "Allergies",
-    call: "Call Emergency Contact",
-    call112: "Call 112",
-    saved: "Saved!"
+const birthSelect = document.getElementById("birthYear");
+const currentYear = new Date().getFullYear();
+birthSelect.innerHTML = '<option value="">Seçiniz</option>';
+for(let y=currentYear; y>=1920; y--){
+  birthSelect.innerHTML += `<option value="${y}">${y}</option>`;
+}
+
+birthSelect.onchange = ()=>{
+  const year = birthSelect.value;
+  if(year){
+    document.getElementById("agePreview").innerText = "Yaş: " + (currentYear - year);
+  } else {
+    document.getElementById("agePreview").innerText = "";
   }
+};
+
+const texts = {
+  tr:{help:"Bu kişi yardıma ihtiyaç duyabilir.",show:"Bilgileri Göster",emergency:"Acil Kişi",blood:"Kan Grubu",cond:"Kronik Rahatsızlıklar",meds:"Rutin İlaçlar",allergy:"Alerjiler",birth:"Doğum Yılı",age:"Yaş",call:"Acil Kişiyi Ara",call112:"112'yi Ara",saved:"Kaydedildi!"},
+  en:{help:"This person may need help.",show:"Show Information",emergency:"Emergency Contact",blood:"Blood Type",cond:"Chronic Conditions",meds:"Medications",allergy:"Allergies",birth:"Birth Year",age:"Age",call:"Call Emergency Contact",call112:"Call 112",saved:"Saved!"}
 };
 
 document.getElementById("btnAccess").onclick = async ()=>{
   const res = await fetch(`${API}?id=${id}`);
   const data = await res.json();
-
-  if(!data.name){
-    alert("Bilgi bulunamadı");
-    return;
-  }
+  if(!data.name){ alert("Bilgi bulunamadı"); return; }
 
   const lang = data.lang || "tr";
   const t = texts[lang];
-
   document.getElementById("helpText").innerText = t.help;
-  document.getElementById("btnAccess").innerText = t.show;
+
+  const age = data.birthYear ? (new Date().getFullYear() - data.birthYear) : "-";
 
   const panel = document.getElementById("infoPanel");
   panel.style.display="block";
   panel.innerHTML = `
     <h3>${data.name}</h3>
+    <p><b>${t.birth}:</b> ${data.birthYear || "-"} (${t.age}: ${age})</p>
     <p><b>${t.blood}:</b> ${data.blood || "-"}</p>
     <p><b>${t.cond}:</b> ${data.conditions || "-"}</p>
     <p><b>${t.meds}:</b> ${data.meds || "-"}</p>
     <p><b>${t.allergy}:</b> ${data.allergies || "-"}</p>
     <p><b>${t.emergency}:</b> ${data.emTel}</p>
-
     <button onclick="location.href='tel:${data.emTel}'">${t.call}</button>
     <button class="emergency" onclick="location.href='tel:112'">${t.call112}</button>
   `;
@@ -128,13 +129,14 @@ document.getElementById("btnAccess").onclick = async ()=>{
 
 async function saveData(){
   const body = {
-    name: document.getElementById("nameInput").value,
-    blood: document.getElementById("bloodInput").value,
-    conditions: document.getElementById("conditionInput").value,
-    meds: document.getElementById("medInput").value,
-    allergies: document.getElementById("allergyInput").value,
-    emTel: document.getElementById("telInput").value,
-    lang: document.getElementById("langSelect").value
+    name: nameInput.value,
+    birthYear: birthYear.value,
+    blood: bloodInput.value,
+    conditions: conditionInput.value,
+    meds: medInput.value,
+    allergies: allergyInput.value,
+    emTel: telInput.value,
+    lang: langSelect.value
   };
 
   await fetch(`${API}?id=${id}`,{
