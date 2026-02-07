@@ -24,6 +24,33 @@ button{background:#111;color:#fff;border:none}
 </div>
 
 <div id="infoPanel" class="panel"></div>
+<hr style="margin:30px 0">
+
+<div id="setupPanel" class="panel" style="display:none">
+  <h3>Bilgi Girişi (Sahip)</h3>
+  <input id="nameInput" placeholder="Ad Soyad">
+  <input id="telInput" placeholder="Acil Kişi Telefon">
+  <button onclick="saveData()">Kaydet</button>
+</div>
+
+<script>
+if(location.search.includes("setup=1")){
+  document.getElementById("setupPanel").style.display="block";
+}
+
+async function saveData(){
+  const name = document.getElementById("nameInput").value;
+  const tel = document.getElementById("telInput").value;
+
+  await fetch(`${API}?id=${id}`,{
+    method:"POST",
+    headers:{"Content-Type":"application/json"},
+    body: JSON.stringify({ name:name, emTel:tel })
+  });
+
+  alert("Kaydedildi!");
+}
+</script>
 
 <script>
 const API = "https://acilbi-api.ilkerust.workers.dev";
