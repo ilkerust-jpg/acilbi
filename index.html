@@ -10,12 +10,14 @@ input,button{width:100%;padding:14px;margin-top:10px;font-size:16px;border-radiu
 button{background:#111;color:#fff;border:none}
 .panel{display:none;margin-top:15px;text-align:left;background:#f3f3f3;padding:12px;border-radius:10px}
 .warn{background:#ffefc2;padding:10px;border-left:4px solid #e6a700;border-radius:6px;margin-top:10px}
+hr{margin:30px 0}
 </style>
 </head>
 <body>
 
 <h2>acilbi</h2>
 
+<!-- ACİL GÖRÜNTÜLEME PANELİ -->
 <div id="accessPanel">
   <p>Bu kişi yardıma ihtiyaç duyabilir.</p>
   <input id="pinInput" placeholder="Şifre">
@@ -24,9 +26,11 @@ button{background:#111;color:#fff;border:none}
 </div>
 
 <div id="infoPanel" class="panel"></div>
-<hr style="margin:30px 0">
 
-<div id="setupPanel" class="panel" style="display:none">
+<hr>
+
+<!-- SAHİP BİLGİ GİRİŞ PANELİ -->
+<div id="setupPanel" class="panel">
   <h3>Bilgi Girişi (Sahip)</h3>
   <input id="nameInput" placeholder="Ad Soyad">
   <input id="telInput" placeholder="Acil Kişi Telefon">
@@ -34,43 +38,32 @@ button{background:#111;color:#fff;border:none}
 </div>
 
 <script>
+const API = "https://acilbi-api.ilkerust.workers.dev";
+const params = new URLSearchParams(location.search);
+const id = params.get("id");
+
+document.getElementById("visiblePin").innerText = id || "";
+
+// Eğer setup=1 varsa kayıt panelini aç
 if(location.search.includes("setup=1")){
   document.getElementById("setupPanel").style.display="block";
 }
 
-async function saveData(){
-  const name = document.getElementById("nameInput").value;
-  const tel = document.getElementById("telInput").value;
-
-  await fetch(`${API}?id=${id}`,{
-    method:"POST",
-    headers:{"Content-Type":"application/json"},
-    body: JSON.stringify({ name:name, emTel:tel })
-  });
-
-  alert("Kaydedildi!");
-}
-</script>
-
-<script>
-const API = "https://acilbi-api.ilkerust.workers.dev";
-const params = new URLSearchParams(location.search);
-const id = params.get("id");
-document.getElementById("visiblePin").innerText = id;
-
-btnAccess.onclick = async ()=>{
+// BİLGİ GÖSTER
+document.getElementById("btnAccess").onclick = async ()=>{
   const res = await fetch(`${API}?id=${id}`);
   const data = await res.json();
 
-  if(!data.name){ alert("Bilgi bulunamadı"); return; }
+  if(!data.name){
+    alert("Bilgi bulunamadı");
+    return;
+  }
 
-  infoPanel.style.display="block";
-  infoPanel.innerHTML = `
+  const panel = document.getElementById("infoPanel");
+  panel.style.display="block";
+  panel.innerHTML = `
     <h3>${data.name}</h3>
     <p><b>Acil Kişi:</b> ${data.emTel}</p>
     <button onclick="location.href='tel:${data.emTel}'">Ara</button>
   `;
 };
-</script>
-</body>
-</html>
