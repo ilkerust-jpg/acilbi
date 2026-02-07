@@ -1,0 +1,103 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>acilbi – Sahip Girişi</title>
+<style>
+body{font-family:system-ui;background:#fff;color:#111;text-align:center;padding:18px}
+input,button{width:100%;padding:14px;margin-top:10px;font-size:16px;border-radius:8px}
+button{background:#111;color:#fff;border:none}
+.panel{background:#f3f3f3;padding:12px;border-radius:10px;margin-top:15px;text-align:left}
+label{font-weight:600;margin-top:12px;display:block}
+</style>
+</head>
+<body>
+
+<h2>Bileklik Sahibi Girişi</h2>
+
+<div class="panel">
+  <label>Bileklik Kodu</label>
+  <input id="idInput" placeholder="Örn: GE4F9K2">
+
+  <label>Sahip Şifresi</label>
+  <input id="pinInput" type="password" placeholder="Kutudan çıkan şifre">
+
+  <button onclick="loadData()">Bilgileri Yükle</button>
+</div>
+
+<div id="formPanel" class="panel" style="display:none"></div>
+
+<script>
+const API = "https://acilbi-api.ilkerust.workers.dev";
+
+async function loadData(){
+  const id = idInput.value.trim().toUpperCase();
+  const pin = pinInput.value.trim();
+
+  if(!id || !pin){ alert("Kod ve şifre gerekli"); return; }
+
+  const res = await fetch(`${API}?id=${id}`);
+  const data = await res.json();
+
+  if(data.ownerPin && data.ownerPin !== pin){
+    alert("Şifre yanlış");
+    return;
+  }
+
+  showForm(id, pin, data);
+}
+
+function showForm(id, pin, data){
+  formPanel.style.display = "block";
+  formPanel.innerHTML = `
+    <label>Ad Soyad</label>
+    <input id="name" value="${data.name || ''}">
+
+    <label>Doğum Yılı</label>
+    <input id="birth" value="${data.birthYear || ''}">
+
+    <label>Kan Grubu</label>
+    <input id="blood" value="${data.blood || ''}">
+
+    <label>Kronik Rahatsızlıklar</label>
+    <input id="conditions" value="${data.conditions || ''}">
+
+    <label>Rutin İlaçlar</label>
+    <input id="meds" value="${data.meds || ''}">
+
+    <label>Alerjiler</label>
+    <input id="allergies" value="${data.allergies || ''}">
+
+    <label>Acil Kişi Telefon</label>
+    <input id="tel" value="${data.emTel || ''}">
+
+    <button onclick="save('${id}','${pin}')">Kaydet</button>
+  `;
+}
+
+async function save(id, pin){
+  const body = {
+    name: name.value,
+    birthYear: birth.value,
+    blood: blood.value,
+    conditions: conditions.value,
+    meds: meds.value,
+    allergies: allergies.value,
+    emTel: tel.value,
+    ownerPin: pin
+  };
+
+  const res = await fetch(`${API}?id=${id}`,{
+    method:"POST",
+    headers:{"Content-Type":"application/json"},
+    body: JSON.stringify(body)
+  });
+
+  if(res.status===403){ alert("Şifre hatalı"); return; }
+  alert("Kaydedildi!");
+}
+</script>
+
+</body>
+</html>
