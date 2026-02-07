@@ -67,3 +67,26 @@ document.getElementById("btnAccess").onclick = async ()=>{
     <button onclick="location.href='tel:${data.emTel}'">Ara</button>
   `;
 };
+
+// BİLGİ KAYDET
+async function saveData(){
+  const name = document.getElementById("nameInput").value;
+  const tel = document.getElementById("telInput").value;
+
+  if(!name || !tel){
+    alert("Lütfen tüm alanları doldurun");
+    return;
+  }
+
+  await fetch(`${API}?id=${id}`,{
+    method:"POST",
+    headers:{"Content-Type":"application/json"},
+    body: JSON.stringify({ name:name, emTel:tel })
+  });
+
+  alert("Kaydedildi!");
+}
+</script>
+
+</body>
+</html>
