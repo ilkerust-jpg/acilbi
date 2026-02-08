@@ -1,6 +1,87 @@
 <!DOCTYPE html>
-<html>
+<html lang="tr">
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Acilbi – Sahip
+<title>Acilbi – Sahip Giriş</title>
+<style>
+body{font-family:system-ui;background:#f3f3f3;padding:18px}
+.panel{background:#fff;padding:16px;border-radius:12px}
+input,select,button{width:100%;padding:12px;margin-top:10px;font-size:16px;border-radius:8px;border:1px solid #ccc}
+button{background:#111;color:#fff;border:none;font-weight:600}
+label{font-weight:600;margin-top:12px;display:block}
+#status{margin-top:10px;font-size:14px}
+</style>
+</head>
+<body>
+
+<h2>🔐 Bileklik Sahibi Bilgi Girişi</h2>
+
+<div class="panel">
+  <label>Bileklik ID</label>
+  <input id="idInput">
+
+  <label>Sahip Şifresi</label>
+  <input id="passInput" type="password">
+
+  <label>Ad Soyad</label>
+  <input id="nameInput">
+
+  <label>Doğum Yılı</label>
+  <input id="birthYearInput">
+
+  <label>Kan Grubu</label>
+  <input id="bloodInput">
+
+  <label>Kronik Rahatsızlıklar</label>
+  <input id="illnessInput">
+
+  <label>Rutin İlaçlar</label>
+  <input id="medsInput">
+
+  <label>Alerjiler</label>
+  <input id="allergyInput">
+
+  <label>Acil Kişi Telefon</label>
+  <input id="emergencyInput">
+
+  <button onclick="saveData()">Bilgileri Kaydet</button>
+  <div id="status"></div>
+</div>
+
+<script>
+// URL'den ID çek
+const params = new URLSearchParams(window.location.search)
+const idFromUrl = params.get("id")
+if(idFromUrl){
+  document.getElementById("idInput").value = idFromUrl.toUpperCase()
+}
+
+async function saveData(){
+  const data = {
+    id: document.getElementById("idInput").value.trim().toUpperCase(),
+    ownerPass: document.getElementById("passInput").value.trim(),
+    name: document.getElementById("nameInput").value,
+    birthYear: document.getElementById("birthYearInput").value,
+    blood: document.getElementById("bloodInput").value,
+    illness: document.getElementById("illnessInput").value,
+    meds: document.getElementById("medsInput").value,
+    allergy: document.getElementById("allergyInput").value,
+    emergency: document.getElementById("emergencyInput").value
+  }
+
+  document.getElementById("status").innerText = "Kaydediliyor..."
+
+  const res = await fetch("https://acilbi.com/save", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(data)
+  })
+
+  const text = await res.text()
+  document.getElementById("status").innerText = text
+}
+</script>
+
+</body>
+</html>
