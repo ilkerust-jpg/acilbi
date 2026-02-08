@@ -5,33 +5,28 @@
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>acilbi – Sahip Girişi</title>
 <style>
-body{font-family:system-ui;background:#fff;color:#111;padding:18px;margin:0;text-align:center}
-.panel{background:#f3f3f3;padding:14px;border-radius:10px;margin-top:14px;text-align:left}
-input,select,textarea{width:100%;padding:10px;margin-top:8px;font-size:15px;border-radius:6px;border:1px solid #444}
-button{width:100%;padding:16px;margin-top:12px;font-size:18px;border:none;border-radius:10px;background:#111;color:#fff}
-.success{background:#dff0d8;padding:10px;border-radius:6px;margin-top:10px}
-.error{background:#f8d7da;padding:10px;border-radius:6px;margin-top:10px}
+body{font-family:system-ui;background:#f4f4f4;margin:0;padding:20px}
+input,select,textarea,button{width:100%;padding:12px;margin-top:10px;font-size:16px;border-radius:8px;border:1px solid #ccc}
+button{background:#111;color:white;border:none}
+.panel{background:white;padding:15px;border-radius:10px;margin-top:15px}
+h2{text-align:center}
 </style>
 </head>
 <body>
 
-<h2>acilbi</h2>
-<p>Bileklik Sahibi Girişi</p>
+<h2>Bileklik Sahibi Bilgi Girişi</h2>
 
 <div class="panel">
 <label>Bileklik Kodu</label>
-<input id="idInput" placeholder="Örn: GE4F2">
+<input id="idInput" placeholder="Örn: YHOO7R">
 
 <label>Sahip Şifresi</label>
-<input id="passInput" type="password" placeholder="Kutudan çıkan şifre">
+<input id="passInput" placeholder="Kutudan çıkan şifre">
 
 <button onclick="loadData()">Bilgileri Yükle</button>
-<div id="msg"></div>
 </div>
 
 <div id="formPanel" class="panel" style="display:none">
-<h3>Kişi Bilgileri</h3>
-
 <label>Ad Soyad</label>
 <input id="name">
 
@@ -48,7 +43,7 @@ button{width:100%;padding:16px;margin-top:12px;font-size:18px;border:none;border
 </select>
 
 <label>Kronik Rahatsızlıklar</label>
-<textarea id="chronic"></textarea>
+<textarea id="illness"></textarea>
 
 <label>Rutin İlaçlar</label>
 <textarea id="meds"></textarea>
@@ -57,80 +52,59 @@ button{width:100%;padding:16px;margin-top:12px;font-size:18px;border:none;border
 <textarea id="allergy"></textarea>
 
 <label>Acil Kişi Telefon</label>
-<input id="emTel">
+<input id="emergency">
 
-<button onclick="saveData()">Kaydet</button>
-<div id="saveMsg"></div>
+<button onclick="saveData()">Bilgileri Kaydet</button>
 </div>
 
 <script>
-const api = "https://acilbi.com";
+const api = "https://acilbi.com/api";
 
-for(let y=new Date().getFullYear(); y>=1920; y--){
-  const opt=document.createElement("option");
-  opt.value=y; opt.text=y;
-  birthYear.appendChild(opt);
+for(let y=new Date().getFullYear(); y>=1930; y--){
+  let o=document.createElement("option");
+  o.value=y; o.text=y;
+  birthYear.appendChild(o);
 }
 
 async function loadData(){
-  const id=idInput.value.trim();
+  const id=idInput.value.trim().toUpperCase();
   const pass=passInput.value.trim();
-  msg.innerHTML="";
 
-  if(!id || !pass){
-    msg.innerHTML='<div class="error">Kod ve şifre gerekli</div>';
-    return;
-  }
+  const r = await fetch(api+"?id="+id+"&pass="+pass);
+  const d = await r.json();
 
-  const res = await fetch(api+"/"+id+"?pass="+pass);
-  const data = await res.json();
-
-  if(!data.ok){
-    msg.innerHTML='<div class="error">Kod veya şifre hatalı</div>';
-    return;
-  }
+  if(!d.success){ alert("Kod veya şifre yanlış"); return; }
 
   formPanel.style.display="block";
-
-  name.value=data.user.name||"";
-  birthYear.value=data.user.birthYear||"";
-  blood.value=data.user.blood||"";
-  chronic.value=data.user.chronic||"";
-  meds.value=data.user.meds||"";
-  allergy.value=data.user.allergy||"";
-  emTel.value=data.user.emTel||"";
-
-  msg.innerHTML='<div class="success">Bilgiler yüklendi</div>';
+  name.value=d.name||"";
+  birthYear.value=d.birthYear||"";
+  blood.value=d.blood||"";
+  illness.value=d.illness||"";
+  meds.value=d.meds||"";
+  allergy.value=d.allergy||"";
+  emergency.value=d.emergency||"";
 }
 
 async function saveData(){
-  const id=idInput.value.trim();
+  const id=idInput.value.trim().toUpperCase();
   const pass=passInput.value.trim();
 
-  const payload={
-    pass,
+  const body={
+    id, pass,
     name:name.value,
     birthYear:birthYear.value,
     blood:blood.value,
-    chronic:chronic.value,
+    illness:illness.value,
     meds:meds.value,
     allergy:allergy.value,
-    emTel:emTel.value
+    emergency:emergency.value
   };
 
-  const res = await fetch(api+"/"+id,{
-    method:"POST",
-    headers:{"Content-Type":"application/json"},
-    body:JSON.stringify(payload)
-  });
+  const r=await fetch(api,{method:"POST",body:JSON.stringify(body)});
+  const d=await r.json();
 
-  const data = await res.json();
-
-  if(data.ok){
-    saveMsg.innerHTML='<div class="success">Bilgiler kaydedildi</div>';
-  }else{
-    saveMsg.innerHTML='<div class="error">Şifre hatalı</div>';
-  }
+  if(d.success) alert("Bilgiler kaydedildi");
+  else alert("Hata oluştu");
 }
 </script>
 
