@@ -1,85 +1,92 @@
 <!DOCTYPE html>
-<html lang="tr">
+<html>
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Acilbi – Sahip Giriş</title>
 <style>
-body{font-family:system-ui;background:#f3f3f3;padding:18px}
-.panel{background:#fff;padding:16px;border-radius:12px}
+body{font-family:system-ui;background:#f4f4f4;color:#111;text-align:center;padding:18px}
+.panel{background:#fff;padding:16px;border-radius:10px;margin-top:15px;text-align:left}
 input,select,button{width:100%;padding:12px;margin-top:10px;font-size:16px;border-radius:8px;border:1px solid #ccc}
-button{background:#111;color:#fff;border:none;font-weight:600}
-label{font-weight:600;margin-top:12px;display:block}
-#status{margin-top:10px;font-size:14px}
+button{background:#111;color:#fff;border:none}
+h2{margin-bottom:5px}
+small{color:#666}
 </style>
 </head>
 <body>
 
-<h2>🔐 Bileklik Sahibi Bilgi Girişi</h2>
+<h2>Sahip Bilgi Girişi</h2>
+<small>Bileklik sahibine ait bilgileri girin</small>
 
 <div class="panel">
-  <label>Bileklik ID</label>
-  <input id="idInput">
+<label>Bileklik ID</label>
+<input id="idInput" placeholder="Örn: AB12CD">
 
-  <label>Sahip Şifresi</label>
-  <input id="passInput" type="password">
+<label>Sahip Şifresi</label>
+<input id="passInput" type="password" placeholder="Kutudan çıkan şifre">
 
-  <label>Ad Soyad</label>
-  <input id="nameInput">
+<label>Ad Soyad</label>
+<input id="name">
 
-  <label>Doğum Yılı</label>
-  <input id="birthYearInput">
+<label>Doğum Yılı</label>
+<input id="birthYear">
 
-  <label>Kan Grubu</label>
-  <input id="bloodInput">
+<label>Kan Grubu</label>
+<select id="blood">
+<option value="">Seçiniz</option>
+<option>0+</option><option>0-</option>
+<option>A+</option><option>A-</option>
+<option>B+</option><option>B-</option>
+<option>AB+</option><option>AB-</option>
+</select>
 
-  <label>Kronik Rahatsızlıklar</label>
-  <input id="illnessInput">
+<label>Kronik Rahatsızlıklar</label>
+<input id="illness">
 
-  <label>Rutin İlaçlar</label>
-  <input id="medsInput">
+<label>Rutin İlaçlar</label>
+<input id="meds">
 
-  <label>Alerjiler</label>
-  <input id="allergyInput">
+<label>Alerjiler</label>
+<input id="allergy">
 
-  <label>Acil Kişi Telefon</label>
-  <input id="emergencyInput">
+<label>Acil Kişi Telefon</label>
+<input id="emergency">
 
-  <button onclick="saveData()">Bilgileri Kaydet</button>
-  <div id="status"></div>
+<button onclick="saveData()">Bilgileri Kaydet</button>
+
+<div id="msg" style="margin-top:15px;color:green"></div>
 </div>
 
 <script>
-// URL'den ID çek
-const params = new URLSearchParams(window.location.search)
-const idFromUrl = params.get("id")
-if(idFromUrl){
-  document.getElementById("idInput").value = idFromUrl.toUpperCase()
-}
+const API = "https://acilbi.com";
 
 async function saveData(){
+  const id = document.getElementById("idInput").value.trim().toUpperCase();
+  const pass = document.getElementById("passInput").value.trim();
+
+  if(!id){ alert("ID gerekli"); return }
+  if(!pass){ alert("Şifre gerekli"); return }
+
   const data = {
-    id: document.getElementById("idInput").value.trim().toUpperCase(),
-    ownerPass: document.getElementById("passInput").value.trim(),
-    name: document.getElementById("nameInput").value,
-    birthYear: document.getElementById("birthYearInput").value,
-    blood: document.getElementById("bloodInput").value,
-    illness: document.getElementById("illnessInput").value,
-    meds: document.getElementById("medsInput").value,
-    allergy: document.getElementById("allergyInput").value,
-    emergency: document.getElementById("emergencyInput").value
+    id,
+    pass,
+    name: document.getElementById("name").value,
+    birthYear: document.getElementById("birthYear").value,
+    blood: document.getElementById("blood").value,
+    illness: document.getElementById("illness").value,
+    meds: document.getElementById("meds").value,
+    allergy: document.getElementById("allergy").value,
+    emergency: document.getElementById("emergency").value
   }
 
-  document.getElementById("status").innerText = "Kaydediliyor..."
-
-  const res = await fetch("https://acilbi.com/save", {
+  const res = await fetch(API + "/save", {
     method: "POST",
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify(data)
-  })
+  });
 
-  const text = await res.text()
-  document.getElementById("status").innerText = text
+  const txt = await res.text();
+  document.getElementById("msg").innerText = txt;
 }
 </script>
 
