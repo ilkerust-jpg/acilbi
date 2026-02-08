@@ -3,108 +3,63 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>acilbi – Sahip Girişi</title>
+<title>Acilbi – Sahip Giriş</title>
 <style>
-body{font-family:system-ui;background:#f4f4f4;margin:0;padding:20px}
-input,select,textarea,button{width:100%;padding:12px;margin-top:10px;font-size:16px;border-radius:8px;border:1px solid #ccc}
-button{background:#111;color:white;border:none}
-.panel{background:white;padding:15px;border-radius:10px;margin-top:15px}
-h2{text-align:center}
+body{font-family:system-ui;background:#fff;padding:18px;text-align:center}
+input,select,button{width:100%;padding:14px;margin-top:10px;font-size:16px;border-radius:8px;border:1px solid #333}
+button{background:#111;color:#fff;font-weight:600}
+.panel{background:#f5f5f5;padding:14px;border-radius:10px;margin-top:12px;text-align:left}
+h2{margin-bottom:10px}
 </style>
 </head>
 <body>
 
-<h2>Bileklik Sahibi Bilgi Girişi</h2>
+<h2>🧑‍💼 Bileklik Sahibi Bilgi Girişi</h2>
 
 <div class="panel">
-<label>Bileklik Kodu</label>
-<input id="idInput" placeholder="Örn: YHOO7R">
+<input id="id" placeholder="Bileklik Kodu (Örn: YHOO7R)">
+<input id="pass" placeholder="Kutudan çıkan şifre">
 
-<label>Sahip Şifresi</label>
-<input id="passInput" placeholder="Kutudan çıkan şifre">
-
-<button onclick="loadData()">Bilgileri Yükle</button>
-</div>
-
-<div id="formPanel" class="panel" style="display:none">
-<label>Ad Soyad</label>
-<input id="name">
-
-<label>Doğum Yılı</label>
-<select id="birthYear"></select>
-
-<label>Kan Grubu</label>
+<input id="name" placeholder="Ad Soyad">
+<input id="birthYear" placeholder="Doğum Yılı (Örn: 1980)">
 <select id="blood">
-<option value="">Seçiniz</option>
+<option value="">Kan Grubu</option>
 <option>A+</option><option>A-</option>
 <option>B+</option><option>B-</option>
 <option>AB+</option><option>AB-</option>
 <option>0+</option><option>0-</option>
 </select>
 
-<label>Kronik Rahatsızlıklar</label>
-<textarea id="illness"></textarea>
+<input id="illness" placeholder="Kronik Rahatsızlıklar">
+<input id="meds" placeholder="Rutin İlaçlar">
+<input id="allergy" placeholder="Alerjiler">
+<input id="emergency" placeholder="Acil Kişi Telefon">
 
-<label>Rutin İlaçlar</label>
-<textarea id="meds"></textarea>
-
-<label>Alerjiler</label>
-<textarea id="allergy"></textarea>
-
-<label>Acil Kişi Telefon</label>
-<input id="emergency">
-
-<button onclick="saveData()">Bilgileri Kaydet</button>
+<button onclick="save()">Bilgileri Kaydet</button>
 </div>
 
 <script>
-const api = "https://acilbi.com/api";
+async function save(){
+  const data = {
+    id: document.getElementById("id").value.trim().toUpperCase(),
+    ownerPass: document.getElementById("pass").value.trim(),
+    name: document.getElementById("name").value.trim(),
+    birthYear: document.getElementById("birthYear").value.trim(),
+    blood: document.getElementById("blood").value,
+    illness: document.getElementById("illness").value.trim(),
+    meds: document.getElementById("meds").value.trim(),
+    allergy: document.getElementById("allergy").value.trim(),
+    emergency: document.getElementById("emergency").value.trim()
+  }
 
-for(let y=new Date().getFullYear(); y>=1930; y--){
-  let o=document.createElement("option");
-  o.value=y; o.text=y;
-  birthYear.appendChild(o);
-}
+  const res = await fetch("https://acilbi.com/save", {
+    method: "POST",
+    headers: {"Content-Type": "application/json"},
+    body: JSON.stringify(data)
+  })
 
-async function loadData(){
-  const id=idInput.value.trim().toUpperCase();
-  const pass=passInput.value.trim();
-
-  const r = await fetch(api+"?id="+id+"&pass="+pass);
-  const d = await r.json();
-
-  if(!d.success){ alert("Kod veya şifre yanlış"); return; }
-
-  formPanel.style.display="block";
-  name.value=d.name||"";
-  birthYear.value=d.birthYear||"";
-  blood.value=d.blood||"";
-  illness.value=d.illness||"";
-  meds.value=d.meds||"";
-  allergy.value=d.allergy||"";
-  emergency.value=d.emergency||"";
-}
-
-async function saveData(){
-  const id=idInput.value.trim().toUpperCase();
-  const pass=passInput.value.trim();
-
-  const body={
-    id, pass,
-    name:name.value,
-    birthYear:birthYear.value,
-    blood:blood.value,
-    illness:illness.value,
-    meds:meds.value,
-    allergy:allergy.value,
-    emergency:emergency.value
-  };
-
-  const r=await fetch(api,{method:"POST",body:JSON.stringify(body)});
-  const d=await r.json();
-
-  if(d.success) alert("Bilgiler kaydedildi");
-  else alert("Hata oluştu");
+  const text = await res.text()
+  alert(text)
 }
 </script>
 
