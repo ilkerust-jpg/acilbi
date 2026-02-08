@@ -1,0 +1,42 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>acilbi – Admin Panel</title>
+<style>
+body{font-family:system-ui;background:#f4f4f4;margin:0;padding:20px;text-align:center}
+button{padding:14px 20px;font-size:18px;border-radius:10px;border:none;background:#111;color:white;margin-top:15px}
+.panel{background:white;padding:15px;border-radius:10px;margin-top:15px;text-align:left}
+.qr{margin-top:15px}
+</style>
+</head>
+<body>
+
+<h2>acilbi Admin Panel</h2>
+
+<button onclick="newBracelet()">Yeni Bileklik Üret</button>
+
+<div id="result" class="panel" style="display:none"></div>
+
+<script>
+const api="https://acilbi.com/api";
+
+async function newBracelet(){
+  const r = await fetch(api+"/admin/new");
+  const d = await r.json();
+
+  result.style.display="block";
+  result.innerHTML=`
+  <b>Bileklik Kodu:</b> ${d.id}<br>
+  <b>Sahip Şifresi:</b> ${d.ownerPass}<br>
+  <b>QR Linki:</b> <a href="${d.qr}" target="_blank">${d.qr}</a><br>
+  <div class="qr">
+  <img src="https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=${d.qr}">
+  </div>
+  `;
+}
+</script>
+
+</body>
+</html>
