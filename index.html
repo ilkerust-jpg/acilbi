@@ -5,147 +5,66 @@
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>acilbi</title>
 <style>
-body{font-family:system-ui;background:#fff;color:#111;text-align:center;padding:18px}
-input,button,select,textarea{width:100%;padding:14px;margin-top:6px;font-size:16px;border-radius:8px}
-button{background:#111;color:#fff;border:none}
-.panel{display:none;margin-top:15px;text-align:left;background:#f3f3f3;padding:12px;border-radius:10px}
-.warn{background:#ffefc2;padding:10px;border-left:4px solid #e6a700;border-radius:6px;margin-top:10px}
-hr{margin:30px 0}
-.emergency{background:#d32f2f;color:#fff;font-weight:bold}
-.inlineAge{font-size:14px;margin-top:4px;color:#333}
-label{font-weight:600;margin-top:14px;display:block}
+body{margin:0;font-family:system-ui;background:#111;color:#fff;text-align:center}
+.card{background:#fff;color:#111;margin:20px;border-radius:16px;padding:20px}
+h1{margin-top:20px}
+.badge{background:#d32f2f;color:#fff;padding:10px;border-radius:8px;font-weight:700;margin:10px 0}
+.info{margin:8px 0;font-size:18px}
+.btn{display:block;width:90%;margin:12px auto;padding:14px;font-size:18px;border-radius:12px;border:none}
+.call{background:#111;color:#fff}
+.emergency{background:#c62828;color:#fff;font-weight:700}
+.footer{font-size:14px;color:#bbb;margin-top:15px}
 </style>
 </head>
 <body>
 
-<h2>acilbi</h2>
+<h1>acilbi</h1>
+<div class="badge">Bu kişi yardımınıza ihtiyaç duyabilir</div>
 
-<div id="accessPanel">
-  <p id="helpText">Bu kişi yardıma ihtiyaç duyabilir.</p>
-  <div class="warn">Şifre: <b id="visiblePin"></b></div>
-  <button id="btnAccess">Bilgileri Göster</button>
-</div>
+<div class="card" id="infoBox">Yükleniyor...</div>
 
-<div id="infoPanel" class="panel"></div>
+<button class="btn call" id="callBtn" style="display:none">Acil Kişiyi Ara</button>
+<button class="btn emergency" onclick="window.location.href='tel:112'">112'yi Ara</button>
 
-<hr>
-
-<div id="setupPanel" class="panel" style="display:none">
-  <h3>Bilgi Girişi (Sahip)</h3>
-
-  <label>Dil Seçimi</label>
-  <select id="langSelect">
-    <option value="tr">Türkçe</option>
-    <option value="en">English</option>
-  </select>
-
-  <label>Ad Soyad</label>
-  <input id="nameInput">
-
-  <label>Doğum Yılı</label>
-  <select id="birthYear"></select>
-  <div id="agePreview" class="inlineAge"></div>
-
-  <label>Kan Grubu</label>
-  <select id="bloodInput">
-    <option value="">Seçiniz</option>
-    <option>A Rh+</option><option>A Rh-</option>
-    <option>B Rh+</option><option>B Rh-</option>
-    <option>AB Rh+</option><option>AB Rh-</option>
-    <option>0 Rh+</option><option>0 Rh-</option>
-  </select>
-
-  <label>Kronik Rahatsızlıklar</label>
-  <textarea id="conditionInput"></textarea>
-
-  <label>Rutin Kullanılan İlaçlar</label>
-  <textarea id="medInput"></textarea>
-
-  <label>Alerjiler</label>
-  <textarea id="allergyInput"></textarea>
-
-  <label>Acil Kişi Telefon</label>
-  <input id="telInput">
-
-  <button onclick="saveData()">Kaydet</button>
-</div>
+<div class="footer">Bu bileklik Acilbi Acil Durum Sistemi'ne bağlıdır</div>
 
 <script>
-const API = "https://acilbi-api.ilkerust.workers.dev";
-const params = new URLSearchParams(location.search);
-const id = params.get("id");
-document.getElementById("visiblePin").innerText = id || "";
+const params = new URLSearchParams(window.location.search)
+const id = params.get("id")
 
-if(location.search.includes("setup=1")){
-  document.getElementById("setupPanel").style.display="block";
-}
+if(!id){
+  document.getElementById("infoBox").innerHTML = "Geçersiz bileklik"
+} else {
+  fetch("https://acilbi.com/get?id=" + id)
+  .then(res => res.json())
+  .then(data => {
+    if(data.error){
+      document.getElementById("infoBox").innerHTML = "Kayıt bulunamadı"
+      return
+    }
 
-const birthSelect = document.getElementById("birthYear");
-const currentYear = new Date().getFullYear();
-birthSelect.innerHTML = '<option value="">Seçiniz</option>';
-for(let y=currentYear; y>=1920; y--){
-  birthSelect.innerHTML += `<option value="${y}">${y}</option>`;
-}
+    let html = "<h2>" + (data.name || "İsim girilmemiş") + "</h2>"
 
-birthSelect.onchange = ()=>{
-  const year = birthSelect.value;
-  if(year){
-    document.getElementById("agePreview").innerText = "Yaş: " + (currentYear - year);
-  } else {
-    document.getElementById("agePreview").innerText = "";
-  }
-};
+    if(data.birthYear){
+      const age = new Date().getFullYear() - data.birthYear
+      html += `<div class="info"><b>Doğum Yılı:</b> ${data.birthYear} (Yaş: ${age})</div>`
+    }
 
-const texts = {
-  tr:{help:"Bu kişi yardıma ihtiyaç duyabilir.",show:"Bilgileri Göster",emergency:"Acil Kişi",blood:"Kan Grubu",cond:"Kronik Rahatsızlıklar",meds:"Rutin İlaçlar",allergy:"Alerjiler",birth:"Doğum Yılı",age:"Yaş",call:"Acil Kişiyi Ara",call112:"112'yi Ara",saved:"Kaydedildi!"},
-  en:{help:"This person may need help.",show:"Show Information",emergency:"Emergency Contact",blood:"Blood Type",cond:"Chronic Conditions",meds:"Medications",allergy:"Allergies",birth:"Birth Year",age:"Age",call:"Call Emergency Contact",call112:"Call 112",saved:"Saved!"}
-};
+    if(data.blood) html += `<div class="info"><b>Kan Grubu:</b> ${data.blood}</div>`
+    if(data.illness) html += `<div class="info"><b>Kronik Rahatsızlıklar:</b> ${data.illness}</div>`
+    if(data.meds) html += `<div class="info"><b>Rutin İlaçlar:</b> ${data.meds}</div>`
+    if(data.allergy) html += `<div class="info"><b>Alerjiler:</b> ${data.allergy}</div>`
 
-document.getElementById("btnAccess").onclick = async ()=>{
-  const res = await fetch(`${API}?id=${id}`);
-  const data = await res.json();
-  if(!data.name){ alert("Bilgi bulunamadı"); return; }
+    if(data.emergency){
+      document.getElementById("callBtn").style.display = "block"
+      document.getElementById("callBtn").innerText = "Acil Kişiyi Ara"
+      document.getElementById("callBtn").onclick = () => {
+        window.location.href = "tel:" + data.emergency
+      }
+    }
 
-  const lang = data.lang || "tr";
-  const t = texts[lang];
-  document.getElementById("helpText").innerText = t.help;
-
-  const age = data.birthYear ? (new Date().getFullYear() - data.birthYear) : "-";
-
-  const panel = document.getElementById("infoPanel");
-  panel.style.display="block";
-  panel.innerHTML = `
-    <h3>${data.name}</h3>
-    <p><b>${t.birth}:</b> ${data.birthYear || "-"} (${t.age}: ${age})</p>
-    <p><b>${t.blood}:</b> ${data.blood || "-"}</p>
-    <p><b>${t.cond}:</b> ${data.conditions || "-"}</p>
-    <p><b>${t.meds}:</b> ${data.meds || "-"}</p>
-    <p><b>${t.allergy}:</b> ${data.allergies || "-"}</p>
-    <p><b>${t.emergency}:</b> ${data.emTel}</p>
-    <button onclick="location.href='tel:${data.emTel}'">${t.call}</button>
-    <button class="emergency" onclick="location.href='tel:112'">${t.call112}</button>
-  `;
-};
-
-async function saveData(){
-  const body = {
-    name: nameInput.value,
-    birthYear: birthYear.value,
-    blood: bloodInput.value,
-    conditions: conditionInput.value,
-    meds: medInput.value,
-    allergies: allergyInput.value,
-    emTel: telInput.value,
-    lang: langSelect.value
-  };
-
-  await fetch(`${API}?id=${id}`,{
-    method:"POST",
-    headers:{"Content-Type":"application/json"},
-    body: JSON.stringify(body)
-  });
-
-  alert(texts[body.lang].saved);
+    document.getElementById("infoBox").innerHTML = html
+  })
 }
 </script>
 
