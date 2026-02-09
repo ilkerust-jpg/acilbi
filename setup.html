@@ -1,26 +1,33 @@
 <!DOCTYPE html>
-<html>
+<html lang="tr">
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Acilbi – Sahip Bilgi Girişi</title>
-
 <style>
 body{font-family:system-ui;background:#f4f4f4;margin:0;padding:18px}
 .card{background:#fff;padding:16px;border-radius:12px;box-shadow:0 2px 6px rgba(0,0,0,0.08)}
 input,select,button{width:100%;padding:12px;margin-top:10px;font-size:16px;border-radius:8px;border:1px solid #ccc}
 button{background:#111;color:#fff;border:none;font-weight:600}
-button:disabled{opacity:0.6}
+button:disabled{opacity:.6}
 .small{font-size:14px;color:#666;margin-top:10px}
 .ok{color:green}
 .err{color:red}
 </style>
 </head>
-
 <body>
 
 <div class="card">
 <h2>📝 Sahip Bilgi Girişi</h2>
+<div class="small">Bileklik bilgilerini doldurun</div>
+
+<!-- ✅ Dil seçimi -->
+<select id="lang">
+  <option value="tr">Türkçe (TR)</option>
+  <option value="en">English (EN)</option>
+  <option value="de">Deutsch (DE)</option>
+  <option value="ru">Русский (RU)</option>
+</select>
 
 <input id="ownerPass" placeholder="Kutudan çıkan sahip şifresi">
 <input id="name" placeholder="Ad Soyad">
@@ -46,11 +53,9 @@ button:disabled{opacity:0.6}
 
 <button id="saveBtn" onclick="save()">Bilgileri Kaydet</button>
 <div id="status" class="small"></div>
-
 </div>
 
 <script>
-
 // Doğum yılı dropdown
 const year = new Date().getFullYear()
 for(let i=year;i>=1920;i--){
@@ -62,8 +67,19 @@ for(let i=year;i>=1920;i--){
 const params = new URLSearchParams(location.search)
 const id = params.get("id")
 
-async function save(){
+// Dil varsayılan: URL ?lang= varsa onu al, yoksa tarayıcıdan tahmin et
+function guessLang(){
+  const q = (params.get("lang")||"").toLowerCase()
+  if(["tr","en","de","ru"].includes(q)) return q
+  const al = (navigator.language||"tr").toLowerCase()
+  if(al.startsWith("de")) return "de"
+  if(al.startsWith("ru")) return "ru"
+  if(al.startsWith("en")) return "en"
+  return "tr"
+}
+document.getElementById("lang").value = guessLang()
 
+async function save(){
   const status = document.getElementById("status")
   const btn = document.getElementById("saveBtn")
 
@@ -78,6 +94,7 @@ async function save(){
   status.innerText="Kaydediliyor..."
 
   const data = {
+    lang: document.getElementById("lang").value,            // ✅ yeni
     ownerPass: document.getElementById("ownerPass").value.trim(),
     name: document.getElementById("name").value.trim(),
     birthYear: document.getElementById("birthYear").value,
@@ -89,7 +106,6 @@ async function save(){
   }
 
   try{
-
     const res = await fetch("https://acilbi.com/save?id="+id,{
       method:"POST",
       headers:{'Content-Type':'application/json'},
@@ -97,7 +113,6 @@ async function save(){
     })
 
     const text = await res.text()
-
     if(res.ok){
       status.className="small ok"
       status.innerText="✅ Bilgiler kaydedildi"
@@ -105,7 +120,6 @@ async function save(){
       status.className="small err"
       status.innerText=text
     }
-
   }catch(e){
     status.className="small err"
     status.innerText="Bağlantı hatası"
@@ -113,7 +127,6 @@ async function save(){
 
   btn.disabled = false
 }
-
 </script>
 
 </body>
