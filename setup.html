@@ -13,120 +13,241 @@ button:disabled{opacity:.6}
 .small{font-size:14px;color:#666;margin-top:10px}
 .ok{color:green}
 .err{color:red}
+label{display:block;margin-top:10px;font-size:14px;color:#444;font-weight:600}
 </style>
 </head>
 <body>
 
 <div class="card">
-<h2>📝 Sahip Bilgi Girişi</h2>
-<div class="small">Bileklik bilgilerini doldurun</div>
+  <h2 id="hTitle">📝 Sahip Bilgi Girişi</h2>
+  <div id="hDesc" class="small">Bileklik bilgilerini doldurun</div>
 
-<!-- ✅ Dil seçimi -->
-<select id="lang">
-  <option value="tr">Türkçe (TR)</option>
-  <option value="en">English (EN)</option>
-  <option value="de">Deutsch (DE)</option>
-  <option value="ru">Русский (RU)</option>
-</select>
+  <!-- Dil seçimi -->
+  <label id="lblLang" for="lang">Dil</label>
+  <select id="lang">
+    <option value="tr">Türkçe (TR)</option>
+    <option value="en">English (EN)</option>
+    <option value="de">Deutsch (DE)</option>
+    <option value="ru">Русский (RU)</option>
+  </select>
 
-<input id="ownerPass" placeholder="Kutudan çıkan sahip şifresi">
-<input id="name" placeholder="Ad Soyad">
+  <input id="ownerPass" placeholder="Kutudan çıkan sahip şifresi">
+  <input id="name" placeholder="Ad Soyad">
 
-<select id="birthYear"></select>
+  <label id="lblBirth" for="birthYear">Doğum Yılı</label>
+  <select id="birthYear"></select>
 
-<select id="blood">
-<option value="">Kan Grubu Seçin</option>
-<option>0 Rh+</option>
-<option>0 Rh-</option>
-<option>A Rh+</option>
-<option>A Rh-</option>
-<option>B Rh+</option>
-<option>B Rh-</option>
-<option>AB Rh+</option>
-<option>AB Rh-</option>
-</select>
+  <label id="lblBlood" for="blood">Kan Grubu</label>
+  <select id="blood">
+    <option value="">Kan Grubu Seçin</option>
+    <option>0 Rh+</option>
+    <option>0 Rh-</option>
+    <option>A Rh+</option>
+    <option>A Rh-</option>
+    <option>B Rh+</option>
+    <option>B Rh-</option>
+    <option>AB Rh+</option>
+    <option>AB Rh-</option>
+  </select>
 
-<input id="illness" placeholder="Kronik Rahatsızlıklar">
-<input id="meds" placeholder="Rutin İlaçlar">
-<input id="allergy" placeholder="Alerjiler">
-<input id="emergency" placeholder="Acil Kişi Telefon">
+  <input id="illness" placeholder="Kronik Rahatsızlıklar">
+  <input id="meds" placeholder="Rutin İlaçlar">
+  <input id="allergy" placeholder="Alerjiler">
+  <input id="emergency" placeholder="Acil Kişi Telefon">
 
-<button id="saveBtn" onclick="save()">Bilgileri Kaydet</button>
-<div id="status" class="small"></div>
+  <button id="saveBtn" onclick="save()">Bilgileri Kaydet</button>
+  <div id="status" class="small"></div>
 </div>
 
 <script>
-// Doğum yılı dropdown
-const year = new Date().getFullYear()
-for(let i=year;i>=1920;i--){
-  document.getElementById("birthYear")
-    .insertAdjacentHTML("beforeend", `<option value="${i}">${i}</option>`)
-}
-
-// URL'den ID al
-const params = new URLSearchParams(location.search)
-const id = params.get("id")
-
-// Dil varsayılan: URL ?lang= varsa onu al, yoksa tarayıcıdan tahmin et
-function guessLang(){
-  const q = (params.get("lang")||"").toLowerCase()
-  if(["tr","en","de","ru"].includes(q)) return q
-  const al = (navigator.language||"tr").toLowerCase()
-  if(al.startsWith("de")) return "de"
-  if(al.startsWith("ru")) return "ru"
-  if(al.startsWith("en")) return "en"
-  return "tr"
-}
-document.getElementById("lang").value = guessLang()
-
-async function save(){
-  const status = document.getElementById("status")
-  const btn = document.getElementById("saveBtn")
-
-  if(!id){
-    status.className="small err"
-    status.innerText="ID bulunamadı"
-    return
-  }
-
-  btn.disabled = true
-  status.className="small"
-  status.innerText="Kaydediliyor..."
-
-  const data = {
-    lang: document.getElementById("lang").value,            // ✅ yeni
-    ownerPass: document.getElementById("ownerPass").value.trim(),
-    name: document.getElementById("name").value.trim(),
-    birthYear: document.getElementById("birthYear").value,
-    blood: document.getElementById("blood").value,
-    illness: document.getElementById("illness").value.trim(),
-    meds: document.getElementById("meds").value.trim(),
-    allergy: document.getElementById("allergy").value.trim(),
-    emergency: document.getElementById("emergency").value.trim()
-  }
-
-  try{
-    const res = await fetch("https://acilbi.com/save?id="+id,{
-      method:"POST",
-      headers:{'Content-Type':'application/json'},
-      body: JSON.stringify(data)
-    })
-
-    const text = await res.text()
-    if(res.ok){
-      status.className="small ok"
-      status.innerText="✅ Bilgiler kaydedildi"
-    }else{
-      status.className="small err"
-      status.innerText=text
+  // ---- ÇEVİRİ SÖZLÜĞÜ ----
+  const I18N = {
+    tr: {
+      title: "📝 Sahip Bilgi Girişi",
+      desc: "Bileklik bilgilerini doldurun",
+      lang: "Dil",
+      ownerPass: "Kutudan çıkan sahip şifresi",
+      name: "Ad Soyad",
+      birth: "Doğum Yılı",
+      blood: "Kan Grubu",
+      bloodPick: "Kan Grubu Seçin",
+      illness: "Kronik Rahatsızlıklar",
+      meds: "Rutin İlaçlar",
+      allergy: "Alerjiler",
+      emergency: "Acil Kişi Telefon",
+      save: "Bilgileri Kaydet",
+      saving: "Kaydediliyor...",
+      saved: "✅ Bilgiler kaydedildi",
+      idMissing: "ID bulunamadı",
+      netErr: "Bağlantı hatası"
+    },
+    en: {
+      title: "📝 Owner Information",
+      desc: "Fill in the wristband information",
+      lang: "Language",
+      ownerPass: "Owner password (from the box)",
+      name: "Full Name",
+      birth: "Birth Year",
+      blood: "Blood Type",
+      bloodPick: "Select blood type",
+      illness: "Chronic Conditions",
+      meds: "Medications",
+      allergy: "Allergies",
+      emergency: "Emergency Phone",
+      save: "Save Information",
+      saving: "Saving...",
+      saved: "✅ Saved successfully",
+      idMissing: "ID not found",
+      netErr: "Network error"
+    },
+    de: {
+      title: "📝 Besitzerinformationen",
+      desc: "Bitte Armbanddaten ausfüllen",
+      lang: "Sprache",
+      ownerPass: "Besitzer-Passwort (aus der Box)",
+      name: "Name",
+      birth: "Geburtsjahr",
+      blood: "Blutgruppe",
+      bloodPick: "Blutgruppe wählen",
+      illness: "Chronische Erkrankungen",
+      meds: "Medikamente",
+      allergy: "Allergien",
+      emergency: "Notfall-Telefon",
+      save: "Speichern",
+      saving: "Wird gespeichert...",
+      saved: "✅ Erfolgreich gespeichert",
+      idMissing: "ID nicht gefunden",
+      netErr: "Netzwerkfehler"
+    },
+    ru: {
+      title: "📝 Данные владельца",
+      desc: "Заполните данные браслета",
+      lang: "Язык",
+      ownerPass: "Пароль владельца (из коробки)",
+      name: "Имя и фамилия",
+      birth: "Год рождения",
+      blood: "Группа крови",
+      bloodPick: "Выберите группу крови",
+      illness: "Хронические заболевания",
+      meds: "Лекарства",
+      allergy: "Аллергии",
+      emergency: "Телефон для связи",
+      save: "Сохранить",
+      saving: "Сохранение...",
+      saved: "✅ Сохранено",
+      idMissing: "ID не найден",
+      netErr: "Ошибка сети"
     }
-  }catch(e){
-    status.className="small err"
-    status.innerText="Bağlantı hatası"
   }
 
-  btn.disabled = false
-}
+  // ---- ID ----
+  const params = new URLSearchParams(location.search)
+  const id = params.get("id")
+
+  // ---- Doğum yılı dropdown ----
+  const year = new Date().getFullYear()
+  const birthSel = document.getElementById("birthYear")
+  for(let i=year;i>=1920;i--){
+    birthSel.insertAdjacentHTML("beforeend", `<option value="${i}">${i}</option>`)
+  }
+
+  // ---- Dil tahmini ----
+  function guessLang(){
+    const q = (params.get("lang")||"").toLowerCase()
+    if (["tr","en","de","ru"].includes(q)) return q
+
+    const al = (navigator.language || "tr").toLowerCase()
+    if (al.startsWith("de")) return "de"
+    if (al.startsWith("ru")) return "ru"
+    if (al.startsWith("en")) return "en"
+    return "tr"
+  }
+
+  const langSelect = document.getElementById("lang")
+  langSelect.value = guessLang()
+
+  function applyLang(code){
+    const t = I18N[code] || I18N.tr
+
+    document.documentElement.lang = code
+    document.getElementById("hTitle").innerText = t.title
+    document.getElementById("hDesc").innerText  = t.desc
+    document.getElementById("lblLang").innerText = t.lang
+    document.getElementById("lblBirth").innerText = t.birth
+    document.getElementById("lblBlood").innerText = t.blood
+
+    document.getElementById("ownerPass").placeholder = t.ownerPass
+    document.getElementById("name").placeholder = t.name
+    document.getElementById("illness").placeholder = t.illness
+    document.getElementById("meds").placeholder = t.meds
+    document.getElementById("allergy").placeholder = t.allergy
+    document.getElementById("emergency").placeholder = t.emergency
+    document.getElementById("saveBtn").innerText = t.save
+
+    // blood default option text
+    const blood = document.getElementById("blood")
+    if (blood && blood.options && blood.options.length > 0) {
+      blood.options[0].text = t.bloodPick
+    }
+  }
+
+  // ilk uygulama
+  applyLang(langSelect.value)
+
+  // değişince uygula
+  langSelect.addEventListener("change", () => applyLang(langSelect.value))
+
+  async function save(){
+    const status = document.getElementById("status")
+    const btn = document.getElementById("saveBtn")
+    const code = langSelect.value
+    const t = I18N[code] || I18N.tr
+
+    if(!id){
+      status.className="small err"
+      status.innerText = t.idMissing
+      return
+    }
+
+    btn.disabled = true
+    status.className="small"
+    status.innerText = t.saving
+
+    const data = {
+      lang: code,
+      ownerPass: document.getElementById("ownerPass").value.trim(),
+      name: document.getElementById("name").value.trim(),
+      birthYear: document.getElementById("birthYear").value,
+      blood: document.getElementById("blood").value,
+      illness: document.getElementById("illness").value.trim(),
+      meds: document.getElementById("meds").value.trim(),
+      allergy: document.getElementById("allergy").value.trim(),
+      emergency: document.getElementById("emergency").value.trim()
+    }
+
+    try{
+      const res = await fetch("https://acilbi.com/save?id="+id,{
+        method:"POST",
+        headers:{'Content-Type':'application/json'},
+        body: JSON.stringify(data)
+      })
+
+      const text = await res.text()
+
+      if(res.ok){
+        status.className="small ok"
+        status.innerText = t.saved
+      }else{
+        status.className="small err"
+        status.innerText = text || "Error"
+      }
+    }catch(e){
+      status.className="small err"
+      status.innerText = t.netErr
+    }
+
+    btn.disabled = false
+  }
 </script>
 
 </body>
