@@ -4,23 +4,25 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Acilbi – Sahip Bilgi Girişi</title>
+
 <style>
 body{font-family:system-ui;background:#f4f4f4;margin:0;padding:18px}
 .card{background:#fff;padding:16px;border-radius:12px;box-shadow:0 2px 6px rgba(0,0,0,0.08)}
 input,select,button{width:100%;padding:12px;margin-top:10px;font-size:16px;border-radius:8px;border:1px solid #ccc}
 button{background:#111;color:#fff;border:none;font-weight:600}
-h2{margin-top:0}
-.small{font-size:14px;color:#666}
+button:disabled{opacity:0.6}
+.small{font-size:14px;color:#666;margin-top:10px}
+.ok{color:green}
+.err{color:red}
 </style>
 </head>
+
 <body>
 
 <div class="card">
 <h2>📝 Sahip Bilgi Girişi</h2>
-<div class="small">Bileklik bilgilerini doldurun</div>
 
 <input id="ownerPass" placeholder="Kutudan çıkan sahip şifresi">
-
 <input id="name" placeholder="Ad Soyad">
 
 <select id="birthYear"></select>
@@ -42,15 +44,18 @@ h2{margin-top:0}
 <input id="allergy" placeholder="Alerjiler">
 <input id="emergency" placeholder="Acil Kişi Telefon">
 
-<button onclick="save()">Bilgileri Kaydet</button>
+<button id="saveBtn" onclick="save()">Bilgileri Kaydet</button>
 <div id="status" class="small"></div>
+
 </div>
 
 <script>
+
 // Doğum yılı dropdown
-const y = new Date().getFullYear();
-for(let i=y;i>=1920;i--){
-  birthYear.innerHTML += `<option value="${i}">${i}</option>`
+const year = new Date().getFullYear()
+for(let i=year;i>=1920;i--){
+  document.getElementById("birthYear")
+    .insertAdjacentHTML("beforeend", `<option value="${i}">${i}</option>`)
 }
 
 // URL'den ID al
@@ -58,28 +63,57 @@ const params = new URLSearchParams(location.search)
 const id = params.get("id")
 
 async function save(){
-  if(!id){ status.innerText="ID bulunamadı"; return }
 
-  const data = {
-    ownerPass: ownerPass.value,
-    name: name.value,
-    birthYear: birthYear.value,
-    blood: blood.value,
-    illness: illness.value,
-    meds: meds.value,
-    allergy: allergy.value,
-    emergency: emergency.value
+  const status = document.getElementById("status")
+  const btn = document.getElementById("saveBtn")
+
+  if(!id){
+    status.className="small err"
+    status.innerText="ID bulunamadı"
+    return
   }
 
-  const res = await fetch("https://acilbi.com/save?id="+id,{
-    method:"POST",
-    headers:{'Content-Type':'application/json'},
-    body: JSON.stringify(data)
-  })
+  btn.disabled = true
+  status.className="small"
+  status.innerText="Kaydediliyor..."
 
-  const t = await res.text()
-  status.innerText = t
+  const data = {
+    ownerPass: document.getElementById("ownerPass").value.trim(),
+    name: document.getElementById("name").value.trim(),
+    birthYear: document.getElementById("birthYear").value,
+    blood: document.getElementById("blood").value,
+    illness: document.getElementById("illness").value.trim(),
+    meds: document.getElementById("meds").value.trim(),
+    allergy: document.getElementById("allergy").value.trim(),
+    emergency: document.getElementById("emergency").value.trim()
+  }
+
+  try{
+
+    const res = await fetch("https://acilbi.com/save?id="+id,{
+      method:"POST",
+      headers:{'Content-Type':'application/json'},
+      body: JSON.stringify(data)
+    })
+
+    const text = await res.text()
+
+    if(res.ok){
+      status.className="small ok"
+      status.innerText="✅ Bilgiler kaydedildi"
+    }else{
+      status.className="small err"
+      status.innerText=text
+    }
+
+  }catch(e){
+    status.className="small err"
+    status.innerText="Bağlantı hatası"
+  }
+
+  btn.disabled = false
 }
+
 </script>
 
 </body>
