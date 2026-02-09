@@ -5,27 +5,30 @@
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Acilbi Sahip Giriş</title>
 <style>
-body{font-family:system-ui;background:#f4f4f4;padding:18px}
-.card{background:#fff;padding:16px;border-radius:12px}
-input,select,button{width:100%;padding:12px;margin-top:10px;border-radius:8px;border:1px solid #ccc}
-button{background:#111;color:#fff;border:none;font-weight:bold}
-#status{margin-top:10px;font-weight:bold}
+body{font-family:system-ui;background:#f3f3f3;padding:16px}
+.card{max-width:480px;margin:auto;background:#fff;padding:20px;border-radius:12px}
+input,select,button{width:100%;padding:12px;margin-top:10px;border-radius:8px;border:1px solid #ccc;font-size:16px}
+button{background:#000;color:#fff;font-weight:bold}
+#msg{margin-top:10px;text-align:center;font-weight:bold}
 </style>
 </head>
 <body>
-
 <div class="card">
-<input id="ownerPass" placeholder="Sahip Şifresi">
+<h2>Bileklik Sahibi Bilgi Girişi</h2>
+
+<input id="pass" placeholder="Kutu içindeki şifre">
 <input id="name" placeholder="Ad Soyad">
 
+<label>Doğum Yılı</label>
 <select id="birthYear"></select>
 
+<label>Kan Grubu</label>
 <select id="blood">
-<option value="">Kan Grubu</option>
-<option>0 Rh+</option><option>0 Rh-</option>
+<option value="">Seçiniz</option>
 <option>A Rh+</option><option>A Rh-</option>
 <option>B Rh+</option><option>B Rh-</option>
 <option>AB Rh+</option><option>AB Rh-</option>
+<option>0 Rh+</option><option>0 Rh-</option>
 </select>
 
 <input id="illness" placeholder="Kronik Rahatsızlıklar">
@@ -34,42 +37,47 @@ button{background:#111;color:#fff;border:none;font-weight:bold}
 <input id="emergency" placeholder="Acil Kişi Telefon">
 
 <button onclick="save()">Bilgileri Kaydet</button>
-<div id="status"></div>
+<div id="msg"></div>
 </div>
 
 <script>
-const params = new URLSearchParams(location.search)
-const id = params.get("id")
-
-const y = new Date().getFullYear();
-for(let i=y;i>=1920;i--){
-  birthYear.innerHTML += `<option value="${i}">${i}</option>`
+const yearSelect = document.getElementById("birthYear")
+for(let y=new Date().getFullYear();y>=1920;y--){
+  const o=document.createElement("option")
+  o.value=y;o.text=y
+  yearSelect.add(o)
 }
 
 async function save(){
-  status.innerText = "Kaydediliyor..."
-  status.style.color = "#555"
+  const id = new URLSearchParams(location.search).get("id")
+  if(!id){ alert("ID bulunamadı"); return }
 
-  const res = await fetch("https://acilbi.com/save?id="+id,{
+  const data = {
+    id,
+    ownerPass: pass.value,
+    name: name.value,
+    birthYear: birthYear.value,
+    blood: blood.value,
+    illness: illness.value,
+    meds: meds.value,
+    allergy: allergy.value,
+    emergency: emergency.value
+  }
+
+  const r = await fetch("https://acilbi.com/save",{
     method:"POST",
-    headers:{'Content-Type':'application/json'},
-    body:JSON.stringify({
-      ownerPass: ownerPass.value,
-      name: name.value,
-      birthYear: birthYear.value,
-      blood: blood.value,
-      illness: illness.value,
-      meds: meds.value,
-      allergy: allergy.value,
-      emergency: emergency.value
-    })
+    headers:{"Content-Type":"application/json"},
+    body:JSON.stringify(data)
   })
 
-  const t = await res.text()
-  status.innerText = t
-  status.style.color = res.ok ? "green" : "red"
+  if(r.ok){
+    msg.innerText="✔ Bilgiler kaydedildi"
+    msg.style.color="green"
+  }else{
+    msg.innerText="❌ Şifre yanlış veya hata var"
+    msg.style.color="red"
+  }
 }
 </script>
-
 </body>
 </html>
