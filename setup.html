@@ -1,7 +1,9 @@
 <!DOCTYPE html>
-<html>
+<html lang="tr">
 <head>
+<meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Acilbi Sahip Giriş</title>
 <style>
 body{font-family:system-ui;background:#f4f4f4;padding:18px}
 .card{background:#fff;padding:16px;border-radius:12px}
@@ -15,19 +17,34 @@ button{background:#111;color:#fff;border:none;font-weight:bold}
 <div class="card">
 <input id="ownerPass" placeholder="Sahip Şifresi">
 <input id="name" placeholder="Ad Soyad">
-<input id="birthYear" placeholder="Doğum Yılı">
-<input id="blood" placeholder="Kan Grubu">
-<input id="illness" placeholder="Rahatsızlıklar">
-<input id="meds" placeholder="İlaçlar">
+
+<select id="birthYear"></select>
+
+<select id="blood">
+<option value="">Kan Grubu</option>
+<option>0 Rh+</option><option>0 Rh-</option>
+<option>A Rh+</option><option>A Rh-</option>
+<option>B Rh+</option><option>B Rh-</option>
+<option>AB Rh+</option><option>AB Rh-</option>
+</select>
+
+<input id="illness" placeholder="Kronik Rahatsızlıklar">
+<input id="meds" placeholder="Rutin İlaçlar">
 <input id="allergy" placeholder="Alerjiler">
 <input id="emergency" placeholder="Acil Kişi Telefon">
-<button onclick="save()">Kaydet</button>
+
+<button onclick="save()">Bilgileri Kaydet</button>
 <div id="status"></div>
 </div>
 
 <script>
 const params = new URLSearchParams(location.search)
 const id = params.get("id")
+
+const y = new Date().getFullYear();
+for(let i=y;i>=1920;i--){
+  birthYear.innerHTML += `<option value="${i}">${i}</option>`
+}
 
 async function save(){
   status.innerText = "Kaydediliyor..."
