@@ -1,59 +1,31 @@
 <!DOCTYPE html>
-<html lang="tr">
+<html>
 <head>
-<meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Acilbi – Sahip Bilgi Girişi</title>
 <style>
-body{font-family:system-ui;background:#f4f4f4;margin:0;padding:18px}
-.card{background:#fff;padding:16px;border-radius:12px;box-shadow:0 2px 6px rgba(0,0,0,0.08)}
-input,select,button{width:100%;padding:12px;margin-top:10px;font-size:16px;border-radius:8px;border:1px solid #ccc}
-button{background:#111;color:#fff;border:none;font-weight:600}
-h2{margin-top:0}
-.small{font-size:14px;color:#666}
-#status{margin-top:12px;font-size:15px;font-weight:600}
+body{font-family:system-ui;background:#f4f4f4;padding:18px}
+.card{background:#fff;padding:16px;border-radius:12px}
+input,select,button{width:100%;padding:12px;margin-top:10px;border-radius:8px;border:1px solid #ccc}
+button{background:#111;color:#fff;border:none;font-weight:bold}
+#status{margin-top:10px;font-weight:bold}
 </style>
 </head>
 <body>
 
 <div class="card">
-<h2>📝 Sahip Bilgi Girişi</h2>
-<div class="small">Bileklik bilgilerini doldurun</div>
-
-<input id="ownerPass" placeholder="Kutudan çıkan sahip şifresi">
+<input id="ownerPass" placeholder="Sahip Şifresi">
 <input id="name" placeholder="Ad Soyad">
-
-<select id="birthYear"></select>
-
-<select id="blood">
-<option value="">Kan Grubu Seçin</option>
-<option>0 Rh+</option>
-<option>0 Rh-</option>
-<option>A Rh+</option>
-<option>A Rh-</option>
-<option>B Rh+</option>
-<option>B Rh-</option>
-<option>AB Rh+</option>
-<option>AB Rh-</option>
-</select>
-
-<input id="illness" placeholder="Kronik Rahatsızlıklar">
-<input id="meds" placeholder="Rutin İlaçlar">
+<input id="birthYear" placeholder="Doğum Yılı">
+<input id="blood" placeholder="Kan Grubu">
+<input id="illness" placeholder="Rahatsızlıklar">
+<input id="meds" placeholder="İlaçlar">
 <input id="allergy" placeholder="Alerjiler">
 <input id="emergency" placeholder="Acil Kişi Telefon">
-
-<button onclick="save()">Bilgileri Kaydet</button>
+<button onclick="save()">Kaydet</button>
 <div id="status"></div>
 </div>
 
 <script>
-// Doğum yılı dropdown
-const y = new Date().getFullYear();
-for(let i=y;i>=1920;i--){
-  birthYear.innerHTML += `<option value="${i}">${i}</option>`
-}
-
-// URL'den ID al
 const params = new URLSearchParams(location.search)
 const id = params.get("id")
 
@@ -64,7 +36,7 @@ async function save(){
   const res = await fetch("https://acilbi.com/save?id="+id,{
     method:"POST",
     headers:{'Content-Type':'application/json'},
-    body: JSON.stringify({
+    body:JSON.stringify({
       ownerPass: ownerPass.value,
       name: name.value,
       birthYear: birthYear.value,
@@ -77,14 +49,8 @@ async function save(){
   })
 
   const t = await res.text()
-
-  if(res.ok){
-    status.innerText = t
-    status.style.color = "green"
-  } else {
-    status.innerText = t
-    status.style.color = "red"
-  }
+  status.innerText = t
+  status.style.color = res.ok ? "green" : "red"
 }
 </script>
 
