@@ -115,7 +115,7 @@ async function generate100Bracelets() {
     }
     
     // Tarayıcının şişmemesi ve isteklerin stabil gitmesi için 100ms bekleme
-    await new Promise(resolve => setTimeout(resolve, 100));
+    await new Promise(resolve => setTimeout(resolve, 1500));
   }
   
   statusDiv.innerText = "✓ 100 adet bileklik ve QR kod başarıyla üretildi!";
