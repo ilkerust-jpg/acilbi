@@ -55,55 +55,77 @@
 </div>
 
 <script>
-const api = "https://acilbi.com/api";
+// Senin özel token adresinle güncellenmiş API yolu
+const api = "https://acilbi.com/api/admin/new?token=acilbi_admin_12312312Iphone";
 
 async function generate100Bracelets() {
   const btn = document.getElementById("generateBtn");
+  const printBtn = document.getElementById("printBtn");
   const statusDiv = document.getElementById("status");
   const tableBody = document.getElementById("resultTableBody");
   
-  // Arayüzü temizle ve butonu kilitle
+  // Arayüzü temizle ve butonları kilitle
   tableBody.innerHTML = "";
   btn.disabled = true;
+  if(printBtn) printBtn.disabled = true;
   
-  // 1'den 100'e kadar döngü
+  // 1'den 100'e kadar döngü başlıyor
   for (let i = 1; i <= 100; i++) {
     statusDiv.innerText = Üretiliyor: ${i} / 100...;
     
     try {
-      const response = await fetch(api + "/admin/new");
-      if (!response.ok) throw new Error("API Hatası");
+      // Doğrudan tokenlı linkimize istek atıyoruz
+      const response = await fetch(api);
+      if (!response.ok) throw new Error(API Hatası (Durum: ${response.status}));
       const data = await response.json();
       
-      // ÇÖZÜM BURADA: innerHTML = ... yerine insertAdjacentHTML kullanıyoruz.
-      // Böylece eski satırları silmez, altına YENİ SATIR olarak ekler!
+      // Her satır için benzersiz bir QR alanı ID'si
+      const qrTargetId = qr_canvas_${i};
+      
+      // Tabloya verileri ekliyoruz
       const row = `
         <tr>
           <td><b>${i}</b></td>
           <td><code>${data.id}</code></td>
           <td><code>${data.ownerPass}</code></td>
-          <td><a href="${data.qr}" target="_blank" class="links">${data.qr}</a></td>
+          <td>
+            <div id="${qrTargetId}" class="qr-container"></div>
+            <a href="${data.qr}" target="_blank" class="links">${data.qr}</a>
+          </td>
         </tr>
       `;
       tableBody.insertAdjacentHTML('beforeend', row);
+      
+      // Eğer HTML yapında qrcode kütüphanesi yüklüyse anında QR kod resmini çizer
+      if (typeof QRCode !== 'undefined') {
+        new QRCode(document.getElementById(qrTargetId), {
+          text: data.qr,
+          width: 100,
+          height: 100,
+          colorDark : "#000000",
+          colorLight : "#ffffff",
+          correctLevel : QRCode.CorrectLevel.L
+        });
+      }
       
     } catch (error) {
       console.error("Hata oluştu:", error);
       const errorRow = `
         <tr style="background: #f8d7da; color: #721c24;">
           <td><b>${i}</b></td>
-          <td colspan="3">Veri alınamadı (API hatası)</td>
+          <td colspan="3">Veri alınamadı (Yetki hatası veya API yanıt vermedi)</td>
         </tr>
       `;
       tableBody.insertAdjacentHTML('beforeend', errorRow);
     }
     
-    // API'nin seni engellememesi için her istek arasında 200 milisaniye bekle
-    await new Promise(resolve => setTimeout(resolve, 200));
+    // Sunucuyu yormamak için her istek arasında 150 milisaniye bekle
+    await new Promise(resolve => setTimeout(resolve, 150));
   }
   
-  statusDiv.innerText = "✓ 100 adet bileklik başarıyla üretildi ve listelendi!";
+  statusDiv.innerText = "✓ 100 adet bileklik ve QR kod başarıyla üretildi!";
   btn.disabled = false;
+  if(printBtn) printBtn.disabled = false;
 }
 </script>
 
