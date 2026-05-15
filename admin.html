@@ -3,38 +3,95 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>acilbi – Admin Panel</title>
+<title>acilbi – Toplu Üretim Paneli</title>
 <style>
-body{font-family:system-ui;background:#f4f4f4;margin:0;padding:20px;text-align:center}
-button{padding:14px 20px;font-size:18px;border-radius:10px;border:none;background:#111;color:white;margin-top:15px}
-.panel{background:white;padding:15px;border-radius:10px;margin-top:15px;text-align:left}
-.qr{margin-top:15px}
+  body { font-family: system-ui, sans-serif; background: #f4f4f4; margin: 0; padding: 20px; color: #333; }
+  .container { max-width: 900px; margin: 0 auto; background: white; padding: 25px; border-radius: 12px; box-shadow: 0 4px 6px rgba(0,0,0,0.1); }
+  button { padding: 14px 28px; font-size: 16px; font-weight: bold; border-radius: 8px; border: none; background: #007bff; color: white; cursor: pointer; transition: background 0.2s; }
+  button:hover { background: #0056b3; }
+  button:disabled { background: #ccc; cursor: not-allowed; }
+  .status { margin-top: 15px; font-weight: bold; color: #555; }
+  .table-container { margin-top: 25px; overflow-x: auto; }
+  table { width: 100%; border-collapse: collapse; text-align: left; font-size: 14px; }
+  th, td { padding: 10px; border: 1px solid #ddd; }
+  th { background: #f8f9fa; }
+  tr:nth-child(even) { background: #f9f9f9; }
+  .links { color: #007bff; text-decoration: none; word-break: break-all; }
 </style>
 </head>
 <body>
 
-<h2>acilbi Admin Panel</h2>
+<div class="container">
+  <h2>acilbi – 100 Adet Toplu Bileklik Üretim Paneli</h2>
+  <p>Aşağıdaki butona bastığınızda sistem arka arkaya 100 adet istek göndererek listeyi hazırlayacaktır.</p>
+  
+  <button id="generateBtn" onclick="generate100Bracelets()">100 Adet Üret</button>
+  <div id="status" class="status"></div>
 
-<button onclick="newBracelet()">Yeni Bileklik Üret</button>
-
-<div id="result" class="panel" style="display:none"></div>
+  <div class="table-container">
+    <table>
+      <thead>
+        <tr>
+          <th>#</th>
+          <th>Bileklik Kodu (ID)</th>
+          <th>Sahip Şifresi</th>
+          <th>Kurulum / Okutma Linki (QR)</th>
+        </tr>
+      </thead>
+      <tbody id="resultTableBody">
+        </tbody>
+    </table>
+  </div>
+</div>
 
 <script>
-const api="https://acilbi.com/api";
+const api = "https://acilbi.com/api";
 
-async function newBracelet(){
-  const r = await fetch(api+"/admin/new");
-  const d = await r.json();
-
-  result.style.display="block";
-  result.innerHTML=`
-  <b>Bileklik Kodu:</b> ${d.id}<br>
-  <b>Sahip Şifresi:</b> ${d.ownerPass}<br>
-  <b>QR Linki:</b> <a href="${d.qr}" target="_blank">${d.qr}</a><br>
-  <div class="qr">
-  <img src="https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=${d.qr}">
-  </div>
-  `;
+async function generate100Bracelets() {
+  const btn = document.getElementById("generateBtn");
+  const statusDiv = document.getElementById("status");
+  const tableBody = document.getElementById("resultTableBody");
+  
+  // Arayüzü temizle ve kilitle
+  tableBody.innerHTML = "";
+  btn.disabled = true;
+  
+  for (let i = 1; i <= 100; i++) {
+    statusDiv.innerText = Üretiliyor: ${i} / 100...;
+    
+    try {
+      const response = await fetch(api + "/admin/new");
+      if (!response.ok) throw new Error("API Hatası");
+      const data = await response.json();
+      
+      // Tabloya yeni satır ekle
+      const row = `
+        <tr>
+          <td><b>${i}</b></td>
+          <td><code>${data.id}</code></td>
+          <td><code>${data.ownerPass}</code></td>
+          <td><a href="${data.qr}" target="_blank" class="links">${data.qr}</a></td>
+        </tr>
+      `;
+      tableBody.insertAdjacentHTML('beforeend', row);
+      
+    } catch (error) {
+      console.error("Hata oluştu:", error);
+      const errorRow = `
+        <tr style="background: #f8d7da; color: #721c24;">
+          <td><b>${i}</b></td>
+          <td colspan="3">Veri alınamadı (API hatası veya bağlantı kesildi)</td>
+        </tr>
+      `;
+      tableBody.insertAdjacentHTML('beforeend', errorRow);
+    }
+    
+    // API'yi yormamak ve tarayıcının kilitlenmesini önlemek için kısa bir duraklama (opsiyonel)
+    await new Promise(resolve => setTimeout(resolve, 50));
+  }
+  
+  statusDiv.innerText = "✓ 100 adet bileklik başarıyla üretildi!";
+  btn.disabled = false;
 }
 </script>
 
