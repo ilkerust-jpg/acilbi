@@ -6,18 +6,18 @@
 <title>acilbi – Toplu Üretim Paneli</title>
 <style>
   body { font-family: system-ui, sans-serif; background: #f4f4f4; margin: 0; padding: 20px; color: #333; }
-  .container { max-width: 1000px; margin: 0 auto; background: white; padding: 25px; border-radius: 12px; box-shadow: 0 4px 6px rgba(0,0,0,0.1); }
+  .container { max-width: 1200px; margin: 0 auto; background: white; padding: 25px; border-radius: 12px; box-shadow: 0 4px 6px rgba(0,0,0,0.1); }
   button { padding: 14px 28px; font-size: 16px; font-weight: bold; border-radius: 8px; border: none; background: #007bff; color: white; cursor: pointer; transition: background 0.2s; }
   button:hover { background: #0056b3; }
   button:disabled { background: #ccc; cursor: not-allowed; }
   .status { margin-top: 15px; font-weight: bold; color: #555; }
   .table-container { margin-top: 25px; overflow-x: auto; }
-  table { width: 100%; border-collapse: collapse; text-align: left; font-size: 14px; }
-  th, td { padding: 12px; border: 1px solid #ddd; vertical-align: middle; }
+  table { width: 100%; border-collapse: collapse; text-align: left; font-size: 13px; }
+  th, td { padding: 10px; border: 1px solid #ddd; vertical-align: middle; }
   th { background: #f8f9fa; }
   tr:nth-child(even) { background: #f9f9f9; }
-  .links { color: #007bff; text-decoration: none; word-break: break-all; display: block; margin-top: 5px; }
-  .qr-container { width: 100px; height: 100px; background: #eee; border-radius: 4px; display: flex; align-items: center; justify-content: center; }
+  .links { color: #007bff; text-decoration: none; word-break: break-all; display: block; margin-top: 5px; font-size: 11px; }
+  .qr-container { width: 100px; height: 100px; background: #eee; border-radius: 4px; display: flex; align-items: center; justify-content: center; margin: 0 auto; }
   @media print {
     body { background: white; padding: 0; }
     .container { box-shadow: none; max-width: 100%; }
@@ -30,7 +30,7 @@
 
 <div class="container">
   <h2>acilbi – 100 Adet Toplu Bileklik Üretim Paneli</h2>
-  <p>Aşağıdaki butona bastığınızda sistem arka arkaya 100 adet istek göndererek QR kodları ve bilgileri ekrana basacaktır.</p>
+  <p>Aşağıdaki butona bastığınızda sistem Cloudflare limitlerine takılmamak için kontrollü bir hızla 100 adet istek gönderecektir.</p>
   
   <button id="generateBtn" onclick="generate100Bracelets()">100 Adet Üret</button>
   <button id="printBtn" onclick="window.print()" style="background: #28a745; margin-left: 10px;" disabled>Sayfayı Yazdır / PDF Yap</button>
@@ -43,7 +43,8 @@
           <th>#</th>
           <th>Bileklik Kodu (ID)</th>
           <th>Sahip Şifresi</th>
-          <th>Kurulum Linki ve QR Kodu</th>
+          <th style="text-align: center;">Doğrudan Profil Linki & QR</th>
+          <th style="text-align: center;">Kurulum Linki & QR</th>
         </tr>
       </thead>
       <tbody id="resultTableBody">
@@ -53,7 +54,7 @@
 </div>
 
 <script>
-// Linkteki "/api" kaldırıldı, tarayıcıda çalışan gerçek adrese eşitlendi:
+// Gerçek token adresin (Lütfen kendi şifreni buraya yerleştirmeyi unutma)
 const apiUrl = "https://acilbi.com/admin/new?token=acilbi_admin_12312312Iphone";
 
 async function generate100Bracelets() {
@@ -71,27 +72,51 @@ async function generate100Bracelets() {
     
     try {
       var response = await fetch(apiUrl);
-      if (!response.ok) { throw new Error("API Hatası. Durum: " + response.status); }
+      if (!response.ok) { throw new Error("Hız sınırına takıldı. Durum: " + response.status); }
       
       var data = await response.json();
-      var qrTargetId = "qr_canvas_" + i;
       
-      // Fotoğrafta gördüğüm API çıktısındaki anahtarlara (id, ownerPass, setup) göre alanları eşitledim:
+      // JSON çıktısındaki iki farklı link türü için benzersiz ID'ler oluşturuyoruz
+      var qrDirectId = "qr_direct_" + i;
+      var qrSetupId = "qr_setup_" + i;
+      
+      // Fotoğraftaki anahtarlara tam uyumlu eşleme (id, ownerPass, qr, setup)
+      // data.qr doğrudan profili, data.setup ise kurulum sayfasını açar.
+      var directLink = data.qr || "https://acilbi.com/" + data.id;
+      var setupLink = data.setup || "https://acilbi.com/setup?id=" + data.id;
+
       var row = "<tr>" +
         "<td><b>" + i + "</b></td>" +
-        "<td><code>" + (data.id || "Yok") + "</code></td>" +
-        "<td><code>" + (data.ownerPass || "Yok") + "</code></td>" +
-        "<td>" +
-          "<div id='" + qrTargetId + "' class='qr-container'></div>" +
-          "<a href='" + (data.setup || "#") + "' target='_blank' class='links'>" + (data.setup || "") + "</a>" +
+        "<td><code>" + (data.id || "Hata") + "</code></td>" +
+        "<td><code>" + (data.ownerPass || "Hata") + "</code></td>" +
+        "<td style='text-align: center;'>" +
+          "<div id='" + qrDirectId + "' class='qr-container'></div>" +
+          "<a href='" + directLink + "' target='_blank' class='links'>" + directLink + "</a>" +
+        "</td>" +
+        "<td style='text-align: center;'>" +
+          "<div id='" + qrSetupId + "' class='qr-container'></div>" +
+          "<a href='" + setupLink + "' target='_blank' class='links'>" + setupLink + "</a>" +
         "</td>" +
       "</tr>";
       
       tableBody.insertAdjacentHTML("beforeend", row);
       
-      if (typeof QRCode !== "undefined" && document.getElementById(qrTargetId) && data.setup) {
-        new QRCode(document.getElementById(qrTargetId), {
-          text: data.setup,
+      // 1. QR Kod: Doğrudan Profil Linki
+      if (typeof QRCode !== "undefined" && document.getElementById(qrDirectId)) {
+        new QRCode(document.getElementById(qrDirectId), {
+          text: directLink,
+          width: 100,
+          height: 100,
+          colorDark: "#000000",
+          colorLight: "#ffffff",
+          correctLevel: QRCode.CorrectLevel.L
+        });
+      }
+      
+      // 2. QR Kod: Kurulum Linki
+      if (typeof QRCode !== "undefined" && document.getElementById(qrSetupId)) {
+        new QRCode(document.getElementById(qrSetupId), {
+          text: setupLink,
           width: 100,
           height: 100,
           colorDark: "#000000",
@@ -101,19 +126,19 @@ async function generate100Bracelets() {
       }
       
     } catch (error) {
-      console.error("Hata:", error);
+      console.error("Döngü hatası:", error);
       var errorRow = "<tr style='background: #f8d7da; color: #721c24;'>" +
         "<td><b>" + i + "</b></td>" +
-        "<td colspan='3'>Veri alınamadı veya JSON okunamadı</td>" +
+        "<td colspan='4'>İstek engellendi veya sunucu yanıt vermedi. (Cloudflare Sınırı)</td>" +
       "</tr>";
       tableBody.insertAdjacentHTML("beforeend", errorRow);
     }
     
-    // Sunucuyu aşırı yüklemeden korumak amacıyla her istek arası çeyrek saniye bekleme
-    await new Promise(function(resolve) { setTimeout(resolve, 250); });
+    // Cloudflare ücretsiz plan sınırlarını aşmamak için güvenli bekleme süresi (600 milisaniye)
+    await new Promise(function(resolve) { setTimeout(resolve, 600); });
   }
   
-  statusDiv.innerText = "✓ 100 adet bileklik ve QR kod başarıyla üretildi!";
+  statusDiv.innerText = "✓ 100 adet bileklik, Çift QR kod ve Kurulum Linkleri başarıyla üretildi!";
   btn.disabled = false;
   if (printBtn) { printBtn.disabled = false; }
 }
