@@ -30,7 +30,7 @@
 
 <div class="container">
   <h2>acilbi – 100 Adet Toplu Bileklik Üretim Paneli</h2>
-  <p>Aşağıdaki butona bastığınızda sistem Cloudflare limitlerine takılmamak için kontrollü bir hızla 100 adet istek gönderecektir.</p>
+  <p>Bu panel, Cloudflare engellerini aşmak için akıllı döngü kullanır. Hata aldığında başarılı olana kadar bekleyip o adımı tekrar dener.</p>
   
   <button id="generateBtn" onclick="generate100Bracelets()">100 Adet Üret</button>
   <button id="printBtn" onclick="window.print()" style="background: #28a745; margin-left: 10px;" disabled>Sayfayı Yazdır / PDF Yap</button>
@@ -54,7 +54,7 @@
 </div>
 
 <script>
-// Gerçek token adresin (Lütfen kendi şifreni buraya yerleştirmeyi unutma)
+// Token adresin (Lütfen kendi şifreni buraya girmeyi unutma)
 const apiUrl = "https://acilbi.com/admin/new?token=acilbi_admin_12312312Iphone";
 
 async function generate100Bracelets() {
@@ -67,28 +67,35 @@ async function generate100Bracelets() {
   btn.disabled = true;
   if (printBtn) { printBtn.disabled = true; }
   
-  for (var i = 1; i <= 100; i++) {
+  var i = 1;
+  while (i <= 100) {
     statusDiv.innerText = "Üretiliyor: " + i + " / 100...";
     
     try {
       var response = await fetch(apiUrl);
-      if (!response.ok) { throw new Error("Hız sınırına takıldı. Durum: " + response.status); }
+      
+      // Eğer sunucu Cloudflare limitine takılırsa (örn: 429 veya 502 hatası)
+      if (!response.ok) { 
+        throw new Error("Cloudflare Limiti Algılandı. Durum: " + response.status); 
+      }
       
       var data = await response.json();
       
-      // JSON çıktısındaki iki farklı link türü için benzersiz ID'ler oluşturuyoruz
+      // Eğer gelen veri boşsa veya düzgün JSON değilse adımı tekrarla
+      if (!data || !data.id) {
+        throw new Error("Geçersiz veri formatı alındı.");
+      }
+      
       var qrDirectId = "qr_direct_" + i;
       var qrSetupId = "qr_setup_" + i;
       
-      // Fotoğraftaki anahtarlara tam uyumlu eşleme (id, ownerPass, qr, setup)
-      // data.qr doğrudan profili, data.setup ise kurulum sayfasını açar.
       var directLink = data.qr || "https://acilbi.com/" + data.id;
       var setupLink = data.setup || "https://acilbi.com/setup?id=" + data.id;
 
       var row = "<tr>" +
         "<td><b>" + i + "</b></td>" +
-        "<td><code>" + (data.id || "Hata") + "</code></td>" +
-        "<td><code>" + (data.ownerPass || "Hata") + "</code></td>" +
+        "<td><code>" + data.id + "</code></td>" +
+        "<td><code>" + data.ownerPass + "</code></td>" +
         "<td style='text-align: center;'>" +
           "<div id='" + qrDirectId + "' class='qr-container'></div>" +
           "<a href='" + directLink + "' target='_blank' class='links'>" + directLink + "</a>" +
@@ -101,7 +108,7 @@ async function generate100Bracelets() {
       
       tableBody.insertAdjacentHTML("beforeend", row);
       
-      // 1. QR Kod: Doğrudan Profil Linki
+      // Doğrudan Profil QR Kod Oluşturma
       if (typeof QRCode !== "undefined" && document.getElementById(qrDirectId)) {
         new QRCode(document.getElementById(qrDirectId), {
           text: directLink,
@@ -113,7 +120,7 @@ async function generate100Bracelets() {
         });
       }
       
-      // 2. QR Kod: Kurulum Linki
+      // Kurulum Sayfası QR Kod Oluşturma
       if (typeof QRCode !== "undefined" && document.getElementById(qrSetupId)) {
         new QRCode(document.getElementById(qrSetupId), {
           text: setupLink,
@@ -125,20 +132,23 @@ async function generate100Bracelets() {
         });
       }
       
+      // Başarılı üretim yapıldığı için bir sonraki sayıya geçiyoruz
+      i++;
+      
+      // Sunucunun dinlenmesi için standart bekleme (1.2 saniye)
+      await new Promise(function(resolve) { setTimeout(resolve, 1200); });
+      
     } catch (error) {
-      console.error("Döngü hatası:", error);
-      var errorRow = "<tr style='background: #f8d7da; color: #721c24;'>" +
-        "<td><b>" + i + "</b></td>" +
-        "<td colspan='4'>İstek engellendi veya sunucu yanıt vermedi. (Cloudflare Sınırı)</td>" +
-      "</tr>";
-      tableBody.insertAdjacentHTML("beforeend", errorRow);
+      console.warn("Hata oluştu, sistem duraklatılıp aynı sıra tekrar denenecek:", error.message);
+      statusDiv.innerText = "⚠️ Limit koruması devrede! " + i + ". adım için 4 saniye mola verildi...";
+      
+      // Hata alındığında listeye kırmızı satır EKLENMEZ. 
+      // 4 saniye beklenir ve döngü 'i' sayısını arttırmadığı için aynı numarayı tekrar temizce almaya çalışır.
+      await new Promise(function(resolve) { setTimeout(resolve, 4000); });
     }
-    
-    // Cloudflare ücretsiz plan sınırlarını aşmamak için güvenli bekleme süresi (600 milisaniye)
-    await new Promise(function(resolve) { setTimeout(resolve, 600); });
   }
   
-  statusDiv.innerText = "✓ 100 adet bileklik, Çift QR kod ve Kurulum Linkleri başarıyla üretildi!";
+  statusDiv.innerText = "✓ Harika! 100 adet çift QR kodlu bileklik FIRESİZ ve eksiksiz üretildi.";
   btn.disabled = false;
   if (printBtn) { printBtn.disabled = false; }
 }
