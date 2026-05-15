@@ -1,60 +1,4 @@
-<!DOCTYPE html>
-<html lang="tr">
-<head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1">
-<title>acilbi – Toplu Üretim Paneli</title>
-<style>
-  body { font-family: system-ui, sans-serif; background: #f4f4f4; margin: 0; padding: 20px; color: #333; }
-  .container { max-width: 1000px; margin: 0 auto; background: white; padding: 25px; border-radius: 12px; box-shadow: 0 4px 6px rgba(0,0,0,0.1); }
-  button { padding: 14px 28px; font-size: 16px; font-weight: bold; border-radius: 8px; border: none; background: #007bff; color: white; cursor: pointer; transition: background 0.2s; }
-  button:hover { background: #0056b3; }
-  button:disabled { background: #ccc; cursor: not-allowed; }
-  .status { margin-top: 15px; font-weight: bold; color: #555; }
-  .table-container { margin-top: 25px; overflow-x: auto; }
-  table { width: 100%; border-collapse: collapse; text-align: left; font-size: 14px; }
-  th, td { padding: 12px; border: 1px solid #ddd; vertical-align: middle; }
-  th { background: #f8f9fa; }
-  tr:nth-child(even) { background: #f9f9f9; }
-  .links { color: #007bff; text-decoration: none; word-break: break-all; display: block; margin-top: 5px; }
-  .qr-container { width: 100px; height: 100px; background: #eee; border-radius: 4px; display: flex; align-items: center; justify-content: center; }
-  /* Yazdırırken sadece tabloyu düzgün basması için opsiyonel stil */
-  @media print {
-    body { background: white; padding: 0; }
-    .container { box-shadow: none; max-width: 100%; }
-    button, .status { display: none; }
-  }
-</style>
-
-<script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
-</head>
-<body>
-
-<div class="container">
-  <h2>acilbi – 100 Adet Toplu Bileklik Üretim Paneli</h2>
-  <p>Aşağıdaki butona bastığınızda sistem arka arkaya 100 adet istek göndererek QR kodları ve bilgileri ekrana basacaktır.</p>
-  
-  <button id="generateBtn" onclick="generate100Bracelets()">100 Adet Üret</button>
-  <button id="printBtn" onclick="window.print()" style="background: #28a745; margin-left: 10px;" disabled>Sayfayı Yazdır / PDF Yap</button>
-  <div id="status" class="status"></div>
-
-  <div class="table-container">
-    <table>
-      <thead>
-        <tr>
-          <th>#</th>
-          <th>Bileklik Kodu (ID)</th>
-          <th>Sahip Şifresi</th>
-          <th>Kurulum Linki ve QR Kodu</th>
-        </tr>
-      </thead>
-      <tbody id="resultTableBody">
-      </tbody>
-    </table>
-  </div>
-</div>
-
-<!DOCTYPE html>
+[22:01, 15.05.2026] İlker: <!DOCTYPE html>
 <html lang="tr">
 <head>
 <meta charset="UTF-8">
@@ -109,7 +53,7 @@
 </div>
 
 <script>
-const apiUrl = "https://acilbi.com/api/admin/new?token=acilbi_admin_12312312Iphone";
+const apiUrl = "https://acilbi.com/api/admin/new?token=acilbi_admin_benimozelsifrem";
 
 async function generate100Bracelets() {
   const btn = document.getElementById("generateBtn");
@@ -174,6 +118,127 @@ async function generate100Bracelets() {
   statusDiv.innerText = "✓ 100 adet bileklik ve QR kod başarıyla üretildi!";
   btn.disabled = false;
   if (printBtn) printBtn.disabled = false;
+}
+</script>
+
+</body>
+</html>
+[22:10, 15.05.2026] İlker: <!DOCTYPE html>
+<html lang="tr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>acilbi – Toplu Üretim Paneli</title>
+<style>
+  body { font-family: system-ui, sans-serif; background: #f4f4f4; margin: 0; padding: 20px; color: #333; }
+  .container { max-width: 1000px; margin: 0 auto; background: white; padding: 25px; border-radius: 12px; box-shadow: 0 4px 6px rgba(0,0,0,0.1); }
+  button { padding: 14px 28px; font-size: 16px; font-weight: bold; border-radius: 8px; border: none; background: #007bff; color: white; cursor: pointer; transition: background 0.2s; }
+  button:hover { background: #0056b3; }
+  button:disabled { background: #ccc; cursor: not-allowed; }
+  .status { margin-top: 15px; font-weight: bold; color: #555; }
+  .table-container { margin-top: 25px; overflow-x: auto; }
+  table { width: 100%; border-collapse: collapse; text-align: left; font-size: 14px; }
+  th, td { padding: 12px; border: 1px solid #ddd; vertical-align: middle; }
+  th { background: #f8f9fa; }
+  tr:nth-child(even) { background: #f9f9f9; }
+  .links { color: #007bff; text-decoration: none; word-break: break-all; display: block; margin-top: 5px; }
+  .qr-container { width: 100px; height: 100px; background: #eee; border-radius: 4px; display: flex; align-items: center; justify-content: center; }
+  @media print {
+    body { background: white; padding: 0; }
+    .container { box-shadow: none; max-width: 100%; }
+    button, .status { display: none; }
+  }
+</style>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+</head>
+<body>
+
+<div class="container">
+  <h2>acilbi – 100 Adet Toplu Bileklik Üretim Paneli</h2>
+  <p>Aşağıdaki butona bastığınızda sistem arka arkaya 100 adet istek göndererek QR kodları ve bilgileri ekrana basacaktır.</p>
+  
+  <button id="generateBtn" onclick="generate100Bracelets()">100 Adet Üret</button>
+  <button id="printBtn" onclick="window.print()" style="background: #28a745; margin-left: 10px;" disabled>Sayfayı Yazdır / PDF Yap</button>
+  <div id="status" class="status"></div>
+
+  <div class="table-container">
+    <table>
+      <thead>
+        <tr>
+          <th>#</th>
+          <th>Bileklik Kodu (ID)</th>
+          <th>Sahip Şifresi</th>
+          <th>Kurulum Linki ve QR Kodu</th>
+        </tr>
+      </thead>
+      <tbody id="resultTableBody">
+      </tbody>
+    </table>
+  </div>
+</div>
+
+<script>
+// API Bağlantısı - Lütfen buradaki "acilbi_admin_benimozelsifrem" kısmını kendi gerçek şifrenle değiştirirken aradaki eşittir (=) işaretine dokunma.
+const apiUrl = "https://acilbi.com/api/admin/new?token=acilbi_admin_12312312Iphone";
+
+async function generate100Bracelets() {
+  var btn = document.getElementById("generateBtn");
+  var printBtn = document.getElementById("printBtn");
+  var statusDiv = document.getElementById("status");
+  var tableBody = document.getElementById("resultTableBody");
+  
+  tableBody.innerHTML = "";
+  btn.disabled = true;
+  if (printBtn) { printBtn.disabled = true; }
+  
+  for (var i = 1; i <= 100; i++) {
+    statusDiv.innerText = "Üretiliyor: " + i + " / 100...";
+    
+    try {
+      var response = await fetch(apiUrl);
+      if (!response.ok) { throw new Error("API Hatası"); }
+      var data = await response.json();
+      
+      var qrTargetId = "qr_canvas_" + i;
+      
+      var row = "<tr>" +
+        "<td><b>" + i + "</b></td>" +
+        "<td><code>" + data.id + "</code></td>" +
+        "<td><code>" + data.ownerPass + "</code></td>" +
+        "<td>" +
+          "<div id='" + qrTargetId + "' class='qr-container'></div>" +
+          "<a href='" + data.qr + "' target='_blank' class='links'>" + data.qr + "</a>" +
+        "</td>" +
+      "</tr>";
+      
+      tableBody.insertAdjacentHTML("beforeend", row);
+      
+      if (typeof QRCode !== "undefined" && document.getElementById(qrTargetId)) {
+        new QRCode(document.getElementById(qrTargetId), {
+          text: data.qr,
+          width: 100,
+          height: 100,
+          colorDark: "#000000",
+          colorLight: "#ffffff",
+          correctLevel: QRCode.CorrectLevel.L
+        });
+      }
+      
+    } catch (error) {
+      console.error("Hata oluştu:", error);
+      var errorRow = "<tr style='background: #f8d7da; color: #721c24;'>" +
+        "<td><b>" + i + "</b></td>" +
+        "<td colspan='3'>Veri alınamadı (API hatası veya bağlantı kesildi)</td>" +
+      "</tr>";
+      tableBody.insertAdjacentHTML("beforeend", errorRow);
+    }
+    
+    await new Promise(function(resolve) { setTimeout(resolve, 250); });
+  }
+  
+  statusDiv.innerText = "✓ 100 adet bileklik ve QR kod başarıyla üretildi!";
+  btn.disabled = false;
+  if (printBtn) { printBtn.disabled = false; }
 }
 </script>
 
